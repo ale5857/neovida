@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ======================
 SECRET_KEY = 'django-insecure-_hgu7ed)i*!n=l^-kvd#0std-8w%!&2u0&jxt)x*we01*gug!n'
 DEBUG = True
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['neovida.onrender.com']
 
 
 # ======================
