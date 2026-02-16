@@ -16,7 +16,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # ======================
 SECRET_KEY = 'django-insecure-_hgu7ed)i*!n=l^-kvd#0std-8w%!&2u0&jxt)x*we01*gug!n'
 DEBUG = True
-ALLOWED_HOSTS = ['neovida.onrender.com']
+ALLOWED_HOSTS = [
+    '127.0.0.1',        # tu computadora
+    'localhost',        # local
+    'neovida.onrender.com'  # servidor real
+]
 
 
 # ======================
@@ -101,6 +105,7 @@ DATABASES = {
 LOGIN_REDIRECT_URL = 'panel_principal'
 LOGIN_URL = 'usuarios:login'
 LOGOUT_REDIRECT_URL = 'usuarios:login'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 
 
