@@ -1,0 +1,1240 @@
+<!-- expedientes/templates/expedientes/ver_expediente.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Expediente - {{ paciente.nombre_completo }} | NeoVida{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --primary-color: #10B981; /* Verde principal */
+    --primary-light: #D1FAE5; /* Verde claro */
+    --primary-dark: #059669; /* Verde oscuro */
+    --secondary-color: #06B6D4; /* Cian */
+    --secondary-light: #CFFAFE; /* Cian claro */
+    --accent-color: #8B5CF6; /* Púrpura suave */
+    --accent-light: #EDE9FE; /* Púrpura claro */
+    --warning-color: #F59E0B; /* Ámbar */
+    --warning-light: #FEF3C7; /* Ámbar claro */
+    --danger-color: #EF4444; /* Rojo */
+    --danger-light: #FEE2E2; /* Rojo claro */
+    --light-color: #F9FAFB; /* Fondo gris claro */
+    --dark-color: #1F2937; /* Texto oscuro */
+    --border-color: #E5E7EB; /* Bordes grises */
+    --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,0,0,0.1);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+}
+
+body {
+    background-color: var(--light-color);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* ===== HEADER PRINCIPAL ===== */
+.expediente-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 2rem;
+    border-radius: var(--radius-lg);
+    color: white;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.expediente-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    opacity: 0.1;
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
+}
+
+.paciente-title {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.paciente-title h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+    color: white;
+}
+
+.badge-perfil {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ===== BOTONES MEJORADOS - CORREGIDOS ===== */
+.btn-primary-custom {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white !important;
+    border: none;
+    padding: 0.85rem 1.75rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-primary-custom:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+    color: white !important;
+}
+
+.btn-outline-custom {
+    background: rgba(255, 255, 255, 0.15);
+    color: #ffffff;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    padding: 0.85rem 1.75rem;
+    border-radius: var(--radius-sm);
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+
+.btn-outline-custom:hover {
+    background: #ffffff;
+    color: var(--primary-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+
+
+/* Botones del modal - MEJOR CONTRASTE */
+.modal-footer .btn-success {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 140px;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.modal-footer .btn-success:hover {
+    background: linear-gradient(135deg, var(--primary-dark), #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(16, 185, 129, 0.4);
+}
+
+.modal-footer .btn-secondary {
+    background: #6c757d;
+    color: white !important;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    transition: all 0.3s ease;
+    min-width: 140px;
+}
+
+.modal-footer .btn-secondary:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+}
+
+/* ===== TARJETAS DE INFORMACIÓN ===== */
+.info-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.info-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--primary-light);
+}
+
+.info-card-title {
+    color: var(--dark-color);
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid var(--primary-light);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.1rem;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color 0.2s ease;
+}
+
+.info-item:hover {
+    background-color: var(--light-color);
+    border-radius: 6px;
+    margin: 0 -0.5rem;
+    padding: 0.75rem 0.5rem;
+}
+
+.info-item:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    color: var(--dark-color);
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.info-value {
+    color: var(--primary-dark);
+    font-weight: 600;
+    text-align: right;
+    max-width: 60%;
+}
+
+/* ===== ESTADÍSTICAS RÁPIDAS ===== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: white;
+    border-radius: var(--radius-md);
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--primary-color);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    line-height: 1;
+    margin: 0.5rem 0;
+}
+
+.stat-label {
+    color: var(--dark-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== LINEA DE TIEMPO DE CONSULTAS ===== */
+.timeline {
+    position: relative;
+    padding-left: 2rem;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--primary-color), var(--secondary-color));
+    border-radius: 1px;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding: 1.5rem;
+    background: white;
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--primary-color);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.timeline-item:hover {
+    transform: translateX(8px);
+    box-shadow: var(--shadow-md);
+    border-left-color: var(--secondary-color);
+}
+
+.timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.9rem;
+    top: 1.5rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: white;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 0 0 3px white;
+    z-index: 2;
+}
+
+.timeline-date {
+    background: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+/* ===== BADGES ===== */
+.badge-success {
+    background-color: var(--primary-light);
+    color: var(--primary-dark);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.badge-warning {
+    background-color: var(--warning-light);
+    color: var(--warning-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.badge-danger {
+    background-color: var(--danger-light);
+    color: var(--danger-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .expediente-header {
+        padding: 1.5rem;
+    }
+    
+    .paciente-title {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    .paciente-title h1 {
+        font-size: 1.5rem;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .timeline {
+        padding-left: 1.5rem;
+    }
+    
+    .timeline::before {
+        left: 0.75rem;
+    }
+    
+    .timeline-item::before {
+        left: -1.4rem;
+    }
+    
+    /* Botones responsive */
+    .btn-primary-custom, .btn-outline-custom {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+    }
+}
+
+/* ===== ANIMACIONES ===== */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-in {
+    animation: fadeInUp 0.5s ease forwards;
+}
+
+/* ===== ESTADO DEL EMBARAZO ===== */
+.pregnancy-status {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.05), rgba(6, 182, 212, 0.05));
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+    border: 1px solid rgba(16, 185, 129, 0.1);
+}
+
+.progress-container {
+    margin-top: 1rem;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--dark-color);
+}
+
+.progress-bar {
+    height: 10px;
+    border-radius: 5px;
+    background: var(--border-color);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 5px;
+    position: relative;
+    transition: width 1s ease;
+}
+
+.progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        rgba(255,255,255,0.4) 50%, 
+        transparent 100%);
+    animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+}
+
+/* ===== SECCIÓN DE CONSULTAS ===== */
+.section-title {
+    color: var(--dark-color);
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 2rem 0 1rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--primary-light);
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.consulta-vacia {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: var(--radius-md);
+    border: 2px dashed var(--border-color);
+    color: var(--dark-color);
+}
+
+.consulta-vacia i {
+    font-size: 3rem;
+    color: var(--border-color);
+    margin-bottom: 1rem;
+}
+
+/* ===== MODAL MEJORADO - PARA VERSE COMPLETO ===== */
+.modal-content {
+    border-radius: var(--radius-lg);
+    border: none;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    padding: 1.5rem;
+}
+
+.modal-title {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.modal-body {
+    padding: 2rem;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.modal-body .form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+}
+
+.modal-xl {
+    max-width: 95%;
+}
+
+@media (min-width: 1200px) {
+    .modal-xl {
+        max-width: 1140px;
+    }
+}
+
+/* Mejora para etiquetas dentro del modal */
+.modal-body label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.modal-body .text-primary {
+    color: var(--primary-dark) !important;
+    font-weight: 700;
+}
+
+/* Para que los checkboxes se vean mejor */
+.modal-body .form-check-input:checked {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+
+/* ===== BOTÓN VER EXPEDIENTE (DENTRO DE TARJETAS BLANCAS) ===== */
+.info-card .btn-outline-custom,
+.timeline-item .btn-outline-custom {
+    background: var(--primary-light);
+    color: var(--primary-dark) !important;
+    border: 2px solid var(--primary-color);
+}
+
+.info-card .btn-outline-custom:hover,
+.timeline-item .btn-outline-custom:hover {
+    background: var(--primary-color);
+    color: white !important;
+}
+.info-card .btn-outline-custom i,
+.timeline-item .btn-outline-custom i {
+    color: inherit !important;
+}
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- HEADER PRINCIPAL -->
+    <div class="expediente-header animate-in">
+        <div class="header-content">
+            <div class="paciente-title">
+                <h1>
+                    <i class="fas fa-user-injured"></i>
+                    {{ paciente.nombre_completo }}
+                </h1>
+                {% if embarazo %}
+                <span class="badge-perfil">
+                    <i class="fas fa-baby"></i> PACIENTE EMBARAZADA
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex flex-wrap gap-3 mb-3">
+                <span class="badge-perfil">
+                    <i class="fas fa-id-card"></i> Exp. {{ expediente.id }}
+                </span>
+                <span class="badge-perfil">
+                    <i class="fas fa-birthday-cake"></i> {{ paciente.edad }} años
+                </span>
+                <span class="badge-perfil">
+                    <i class="fas fa-calendar-plus"></i> {{ expediente.fecha_apertura|date:"d/m/Y" }}
+                </span>
+                {% if embarazo and embarazo.semanas_gestacion %}
+                <span class="badge-perfil">
+                    <i class="fas fa-calendar-heart"></i> SG {{ embarazo.semanas_gestacion }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex flex-wrap gap-2">
+                <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalNuevaConsulta">
+                    <i class="fas fa-plus-circle"></i> Nueva Consulta
+                </button>
+                <button class="btn-outline-custom" onclick="imprimirExpediente()">
+                    <i class="fas fa-print"></i> Imprimir
+                </button>
+                <button class="btn-outline-custom" onclick="verExpedienteCompleto()">
+                    <i class="fas fa-file-medical-alt"></i> Ver Completo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ESTADÍSTICAS RÁPIDAS -->
+    <div class="stats-grid">
+        <div class="stat-card" onclick="filtrarConsultas('todas')">
+            <div class="stat-label">Total Consultas</div>
+            <div class="stat-number">{{ total_consultas }}</div>
+            <small>Registradas</small>
+        </div>
+        
+        <div class="stat-card" onclick="filtrarConsultas('recientes')">
+            <div class="stat-label">Última Consulta</div>
+            <div class="stat-number">
+                {% if consultas_prenatales.0 %}
+                    {{ consultas_prenatales.0.semana_gestacion }}
+                {% else %}
+                    1
+                {% endif %}
+            </div>
+            <small>Semanas gestación</small>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Embarazo</div>
+            <div class="stat-number">
+                {% if embarazo %}
+                    {{ embarazo.semanas_gestacion|default:"?" }}
+                {% else %}
+                    -
+                {% endif %}
+            </div>
+            <small>Semanas actuales</small>
+        </div>
+        
+        <div class="stat-card">
+            <div class="stat-label">Estado</div>
+            <div class="stat-number">
+                {% if expediente.estado == 'Activo' %}
+                    <span class="badge-success">Activo</span>
+                {% else %}
+                    <span class="badge-warning">{{ expediente.estado }}</span>
+                {% endif %}
+            </div>
+            <small>Expediente</small>
+        </div>
+    </div>
+
+    <!-- INFORMACIÓN PRINCIPAL -->
+    <div class="row g-4">
+        <!-- DATOS PERSONALES -->
+        <div class="col-lg-6">
+            <div class="info-card animate-in">
+                <h5 class="info-card-title">
+                    <i class="fas fa-user-circle"></i> Datos Personales
+                </h5>
+                <div class="info-item">
+                    <span class="info-label">Nombre Completo:</span>
+                    <span class="info-value">{{ paciente.nombre_completo }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Cédula:</span>
+                    <span class="info-value">{{ paciente.cedula|default:"No registrada" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Fecha Nacimiento:</span>
+                    <span class="info-value">{{ paciente.fecha_nacimiento|date:"d/m/Y"|default:"No registrada" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Edad:</span>
+                    <span class="info-value">{{ paciente.edad }} años</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Teléfono:</span>
+                    <span class="info-value">{{ paciente.telefono|default:"No registrado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Dirección:</span>
+                    <span class="info-value">{{ paciente.direccion|default:"No registrada" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- INFORMACIÓN MÉDICA -->
+        <div class="col-lg-6">
+            <div class="info-card animate-in">
+                <h5 class="info-card-title">
+                    <i class="fas fa-heartbeat"></i> Información Médica
+                </h5>
+                <div class="info-item">
+                    <span class="info-label">Grupo Sanguíneo:</span>
+                    <span class="info-value">{{ paciente.grupo_sanguineo|default:"No registrado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Factor RH:</span>
+                    <span class="info-value">{{ paciente.factor_rh|default:"No registrado" }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Alergias:</span>
+                    <span class="info-value">{{ paciente.alergias|default:"Ninguna registrada"|truncatechars:30 }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Discapacidad:</span>
+                    <span class="info-value">
+                        {% if paciente.discapacidad %}
+                            {{ paciente.tipo_discapacidad|default:"Sí" }}
+                        {% else %}
+                            No
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Seguro Médico:</span>
+                    <span class="info-value">
+                        {% if paciente.tiene_seguro %}
+                            {{ paciente.tipo_seguro|default:"Sí" }}
+                        {% else %}
+                            No tiene
+                        {% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- EMBARAZO ACTUAL -->
+        {% if embarazo %}
+        <div class="col-12">
+            <div class="pregnancy-status animate-in">
+                <h5 class="info-card-title">
+                    <i class="fas fa-baby"></i> Embarazo Actual
+                </h5>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <span class="info-label">Fecha Última Regla:</span>
+                            <span class="info-value">{{ embarazo.fecha_ultima_regla|date:"d/m/Y" }}</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Semanas de Gestación:</span>
+                            <span class="info-value">
+                                {{ embarazo.semanas_gestacion }}
+                                <span class="badge-success ms-2">
+                                    {% if embarazo.semanas_gestacion <= 12 %}
+                                        1er Trimestre
+                                    {% elif embarazo.semanas_gestacion <= 26 %}
+                                        2do Trimestre
+                                    {% else %}
+                                        3er Trimestre
+                                    {% endif %}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Talla:</span>
+                            <span class="info-value">{{ embarazo.talla|default:"No registrada" }} cm</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="info-item">
+                            <span class="info-label">Peso Anterior:</span>
+                            <span class="info-value">{{ embarazo.peso_anterior|default:"No registrado" }} kg</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Embarazo Planeado:</span>
+                            <span class="info-value">
+                                {% if embarazo.embarazo_planeado %}
+                                    <span class="badge-success">Sí</span>
+                                {% else %}
+                                    <span class="badge-warning">No</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Activo:</span>
+                            <span class="info-value">
+                                {% if embarazo.activo %}
+                                    <span class="badge-success">Sí</span>
+                                {% else %}
+                                    <span class="badge-danger">No</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- BARRA DE PROGRESO -->
+                {% if embarazo.semanas_gestacion %}
+                <div class="progress-container">
+                    <div class="progress-label">
+                        <span>Progreso del Embarazo</span>
+                        <span>{{ embarazo.semanas_gestacion }} de 40 semanas</span>
+                    </div>
+                    <div class="progress-bar">
+                        {% with progreso=embarazo.semanas_gestacion|floatformat:0|add:"0" %}
+                        <div class="progress-fill" style="width: {% widthratio progreso 40 100 %}%;"></div>
+                        {% endwith %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- HISTORIAL DE CONSULTAS PRENATALES -->
+        <div class="col-12">
+            <h5 class="section-title">
+                <i class="fas fa-history"></i> Historial de Consultas Prenatales
+                <span class="badge-success ms-2">{{ total_consultas }}</span>
+            </h5>
+            
+            {% if consultas_prenatales %}
+            <div class="timeline">
+                {% for consulta in consultas_prenatales %}
+                <div class="timeline-item animate-in" style="animation-delay: {{ forloop.counter0|add:"1"|divisibleby:"2"|yesno:"0.1s,0.2s" }};">
+                    <div class="timeline-date">
+                        <i class="fas fa-calendar-alt"></i>
+                        {{ consulta.fecha_consulta|date:"d/m/Y" }}
+                        <span class="badge-success ms-2">
+                            <i class="fas fa-baby"></i> SG {{ consulta.semana_gestacion }}
+                        </span>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <span class="info-label">Profesional:</span>
+                                <span class="info-value">{{ consulta.usuario.get_full_name|default:consulta.usuario.username }}</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Peso:</span>
+                                <span class="info-value">{{ consulta.peso_madre }} kg</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Presión:</span>
+                                <span class="info-value">{{ consulta.presion_sistolica }}/{{ consulta.presion_diastolica }}</span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="info-item">
+                                <span class="info-label">Altura Uterina:</span>
+                                <span class="info-value">{{ consulta.altura_uterina|default:"No registrada" }} cm</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">FCF:</span>
+                                <span class="info-value">{{ consulta.frecuencia_cardiaca_fetal|default:"No registrada" }} lpm</span>
+                            </div>
+                            <div class="info-item">
+                                <span class="info-label">Movimientos:</span>
+                                <span class="info-value">
+                                    {% if consulta.movimientos_fetales %}
+                                        <span class="badge-success">Presentes</span>
+                                    {% else %}
+                                        <span class="badge-danger">Ausentes</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if consulta.impresion_clinica %}
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <strong><i class="fas fa-stethoscope"></i> Impresión Clínica:</strong>
+                        <p class="mb-0 mt-1">{{ consulta.impresion_clinica|truncatechars:150 }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="mt-3 d-flex gap-2">
+                        <a href="{% url 'consultas:detalle_consulta' consulta.id %}"
+                           class="btn btn-sm btn-outline-custom">
+                            <i class="fas fa-eye"></i> Ver Detalle
+                        </a>
+                        
+                        {% if consulta.proxima_cita %}
+                        <span class="badge bg-light text-dark">
+                            <i class="fas fa-calendar-check"></i> Próxima: {{ consulta.proxima_cita|date:"d/m/Y" }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="consulta-vacia">
+                <i class="fas fa-file-medical"></i>
+                <h5 class="mt-3">No hay consultas prenatales registradas</h5>
+                <p class="text-muted mb-4">Esta paciente no tiene consultas en su historial prenatal.</p>
+                <button class="btn-primary-custom" data-bs-toggle="modal" data-bs-target="#modalNuevaConsulta">
+                    <i class="fas fa-plus-circle"></i> Registrar Primera Consulta
+                </button>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nueva Consulta Prenatal - MANTENIENDO TU ESTRUCTURA ORIGINAL -->
+<div class="modal fade" id="modalNuevaConsulta" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+
+      <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+        <h5 class="modal-title text-white">
+          <i class="fas fa-file-medical-alt"></i> Nueva Consulta Prenatal
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="post" action="{% url 'expedientes:crear_consulta_prenatal' expediente.id %}">
+        {% csrf_token %}
+
+        <div class="modal-body" style="max-height: 65vh; overflow-y: auto;">
+
+          <!-- Datos generales -->
+          <h6 class="text-primary mb-3" style="color: var(--primary-dark) !important;">
+            <i class="fas fa-calendar-alt me-2"></i>Datos Generales
+          </h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Semana de Gestación *</label>
+              <input type="number" name="semana_gestacion" class="form-control" required min="1" max="42">
+            </div>
+          </div>
+
+          <!-- Signos vitales -->
+          <h6 class="text-primary mt-4 mb-3" style="color: var(--primary-dark) !important;">
+            <i class="fas fa-heartbeat me-2"></i>Signos Vitales Maternos
+          </h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Peso materno (kg) *</label>
+              <input type="number" step="0.01" name="peso_madre" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Presión sistólica *</label>
+              <input type="number" name="presion_sistolica" class="form-control" required>
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Presión diastólica *</label>
+              <input type="number" name="presion_diastolica" class="form-control" required>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="edema" >
+                <label class="form-check-label fw-semibold">Edema</label>
+              </div>
+            </div>
+            <div class="col-md-3 mb-3">
+              <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="proteinuria">
+                <label class="form-check-label fw-semibold">Proteinuria</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluación obstétrica -->
+          <h6 class="text-primary mt-4 mb-3" style="color: var(--primary-dark) !important;">
+            <i class="fas fa-baby me-2"></i>Evaluación Obstétrica
+          </h6>
+          <div class="row">
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Altura uterina (cm)</label>
+              <input type="number" step="0.1" name="altura_uterina" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+              <label class="fw-semibold">Frecuencia cardiaca fetal</label>
+              <input type="number" name="frecuencia_cardiaca_fetal" class="form-control">
+            </div>
+            <div class="col-md-4 mb-3">
+              <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" name="movimientos_fetales" checked>
+                <label class="form-check-label fw-semibold">Movimientos fetales presentes</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Evaluación clínica -->
+          <h6 class="text-primary mt-4 mb-3" style="color: var(--primary-dark) !important;">
+            <i class="fas fa-stethoscope me-2"></i>Evaluación Clínica
+          </h6>
+          <textarea name="sintomas" class="form-control mb-3" placeholder="Síntomas relevantes" rows="3"></textarea>
+          <textarea name="signos_alarma" class="form-control mb-3" placeholder="Signos de alarma" rows="3"></textarea>
+          <textarea name="impresion_clinica" class="form-control mb-3" placeholder="Impresión clínica" rows="4"></textarea>
+
+          <!-- Conducta -->
+          <h6 class="text-primary mt-4 mb-3" style="color: var(--primary-dark) !important;">
+            <i class="fas fa-clipboard-check me-2"></i>Conducta
+          </h6>
+          <textarea name="recomendaciones" class="form-control mb-3" placeholder="Recomendaciones" rows="3"></textarea>
+          <textarea name="tratamiento" class="form-control mb-3" placeholder="Tratamiento / suplementación" rows="3"></textarea>
+
+          <div class="col-md-4 mb-3">
+            <label class="fw-semibold">Próxima cita</label>
+            <input
+    type="datetime-local"
+    name="proxima_cita"
+    class="form-control"
+    min="{{ now|date:'Y-m-d\\TH:i' }}"
+>
+
+          </div>
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="submit" class="btn btn-success">
+            <i class="fas fa-save"></i> Guardar Consulta
+          </button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            Cancelar
+          </button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal para Detalles de Consulta -->
+<div class="modal fade modal-custom" id="modalDetalleConsulta" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));">
+                <h5 class="modal-title text-white">
+                    <i class="fas fa-file-medical"></i> Detalles de Consulta Prenatal
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detalleConsultaContent">
+                <!-- Los detalles se cargarán aquí dinámicamente -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-success" onclick="imprimirConsulta()">
+                    <i class="fas fa-print"></i> Imprimir Consulta
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Tu JavaScript original aquí...
+// (Manteniendo todo igual que ya tenías)
+
+// Variables globales
+const expedienteId = {{ expediente.id }};
+const pacienteNombre = "{{ paciente.nombre_completo }}";
+
+// Función para nueva consulta
+function nuevaConsulta() {
+    const modal = new bootstrap.Modal(document.getElementById('modalNuevaConsulta'));
+    modal.show();
+}
+
+// Función para ver expediente completo
+function verExpedienteCompleto() {
+    window.location.href = "{% url 'expedientes:expediente_completo' expediente.paciente.id %}";
+}
+
+// Función para imprimir expediente
+function imprimirExpediente() {
+    const printWindow = window.open('', '_blank');
+    const today = new Date().toLocaleDateString('es-ES');
+    
+    const printContent = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Expediente - {{ paciente.nombre_completo }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
+                .print-header { text-align: center; border-bottom: 3px solid #10B981; padding-bottom: 20px; margin-bottom: 30px; }
+                .print-header h1 { color: #10B981; }
+                .section { margin-bottom: 25px; }
+                .section h2 { color: #1F2937; border-bottom: 2px solid #D1FAE5; padding-bottom: 5px; }
+                .info-item { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px dashed #ddd; }
+                @media print {
+                    @page { margin: 15mm; }
+                    body { font-size: 12pt; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="print-header">
+                <h1><i class="fas fa-file-medical"></i> EXPEDIENTE CLÍNICO</h1>
+                <h2>{{ paciente.nombre_completo }}</h2>
+                <p>Expediente: {{ expediente.id }} | Edad: {{ paciente.edad }} años</p>
+            </div>
+            
+            <div class="section">
+                <h2>Datos Personales</h2>
+                <div class="info-item"><strong>Cédula:</strong> {{ paciente.cedula|default:"No registrada" }}</div>
+                <div class="info-item"><strong>Teléfono:</strong> {{ paciente.telefono|default:"No registrado" }}</div>
+                <div class="info-item"><strong>Dirección:</strong> {{ paciente.direccion|default:"No registrada" }}</div>
+            </div>
+            
+            {% if embarazo %}
+            <div class="section">
+                <h2>Embarazo Actual</h2>
+                <div class="info-item"><strong>FUR:</strong> {{ embarazo.fecha_ultima_regla|date:"d/m/Y" }}</div>
+                <div class="info-item"><strong>Semanas Gestación:</strong> {{ embarazo.semanas_gestacion }}</div>
+                <div class="info-item"><strong>Estado:</strong> {{ embarazo.activo|yesno:"Activo,Finalizado" }}</div>
+            </div>
+            {% endif %}
+            
+            {% if consultas_prenatales %}
+            <div class="section">
+                <h2>Consultas Prenatales ({{ total_consultas }})</h2>
+                {% for consulta in consultas_prenatales %}
+                <div style="margin-bottom: 15px; padding-left: 15px; border-left: 3px solid #10B981;">
+                    <strong>{{ consulta.fecha_consulta|date:"d/m/Y" }}</strong> - SG {{ consulta.semana_gestacion }}<br>
+                    <strong>Peso:</strong> {{ consulta.peso_madre }} kg | 
+                    <strong>Presión:</strong> {{ consulta.presion_sistolica }}/{{ consulta.presion_diastolica }}
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <footer style="margin-top: 50px; text-align: center; color: #666; border-top: 1px solid #ddd; padding-top: 20px;">
+                <p>Generado el ${today}</p>
+                <p>NeoVida - Sistema de Gestión Médica</p>
+            </footer>
+        </body>
+        </html>
+    `;
+    
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.onload = function() {
+        printWindow.print();
+        printWindow.onafterprint = function() {
+            printWindow.close();
+        };
+    };
+}
+
+// Función para ver detalle de consulta
+function verConsultaDetalle(consultaId) {
+    Swal.fire({
+        title: 'Cargando detalles...',
+        html: 'Obteniendo información de la consulta',
+        allowOutsideClick: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
+    
+    // Aquí deberías hacer una petición AJAX para obtener los detalles
+    // Por ahora mostramos un mensaje
+    setTimeout(() => {
+        Swal.fire({
+            title: 'Detalle de Consulta',
+            html: `
+                <div class="text-start">
+                    <p><strong>ID:</strong> ${consultaId}</p>
+                    <p><strong>Paciente:</strong> ${pacienteNombre}</p>
+                    <p class="mt-3">Implementa una vista detallada para mostrar toda la información.</p>
+                </div>
+            `,
+            icon: 'info',
+            confirmButtonText: 'Entendido',
+            confirmButtonColor: '#10B981'
+        });
+    }, 1000);
+}
+
+// Animaciones al cargar
+document.addEventListener('DOMContentLoaded', function() {
+    console.log(`Expediente cargado para: ${pacienteNombre}`);
+    
+    // Agregar animaciones a elementos
+    const cards = document.querySelectorAll('.info-card, .stat-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+    });
+    
+    // Si no hay consultas, sugerir registrar
+    if ({{ total_consultas }} === 0 && {{ embarazo.id|default:"0" }} !== "0") {
+        setTimeout(() => {
+            Swal.fire({
+                title: 'Primera Consulta Prenatal',
+                html: `
+                    <div class="text-center">
+                        <i class="fas fa-baby-carriage" style="font-size: 3rem; color: #10B981;"></i>
+                        <p class="mt-3">${pacienteNombre} está embarazada pero no tiene consultas registradas.</p>
+                        <p>¿Desea registrar la primera consulta de control prenatal?</p>
+                    </div>
+                `,
+                icon: 'info',
+                showCancelButton: true,
+                confirmButtonColor: '#10B981',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="fas fa-stethoscope"></i> Registrar',
+                cancelButtonText: 'Más tarde'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    nuevaConsulta();
+                }
+            });
+        }, 1000);
+    }
+});
+</script>
+
+{% endblock %}

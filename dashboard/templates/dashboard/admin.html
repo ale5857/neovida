@@ -1,0 +1,200 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block dashboard_title %}Panel Administrador - Resumen General{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- =======================
+RESÚMENES PRINCIPALES
+======================= -->
+<div class="row mb-4">
+
+    <!-- Usuarios -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-primary border-4 shadow-sm h-100 hover-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold text-primary text-uppercase small">Usuarios</div>
+                    <div class="h4 fw-bold">{{ total_usuarios }}</div>
+                </div>
+                <i class="fas fa-users fa-2x text-primary"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Doctores -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-success border-4 shadow-sm h-100 hover-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold text-success text-uppercase small">Doctores</div>
+                    <div class="h4 fw-bold">{{ total_doctores }}</div>
+                </div>
+                <i class="fas fa-user-md fa-2x text-success"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enfermeras -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-warning border-4 shadow-sm h-100 hover-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold text-warning text-uppercase small">Enfermeras</div>
+                    <div class="h4 fw-bold">{{ total_enfermeras }}</div>
+                </div>
+                <i class="fas fa-user-nurse fa-2x text-warning"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pacientes -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-start border-info border-4 shadow-sm h-100 hover-card">
+            <div class="card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <div class="fw-bold text-info text-uppercase small">Pacientes</div>
+                    <div class="h4 fw-bold">{{ total_pacientes }}</div>
+                </div>
+                <i class="fas fa-baby fa-2x text-info"></i>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- =======================
+ALERTAS + ESTADO
+======================= -->
+<div class="row mb-4">
+
+    <!-- Alertas -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-exclamation-triangle me-2"></i> Alertas del sistema
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between">
+                    Embarazos alto riesgo
+                    <span class="badge bg-danger">{{ embarazos_riesgo|default:0 }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                    Citas atrasadas
+                    <span class="badge bg-warning">{{ citas_atrasadas|default:0 }}</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Estado del sistema -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-success text-white">
+                <i class="fas fa-server me-2"></i> Estado del sistema
+            </div>
+            <div class="card-body">
+                <p>Base de datos: <span class="text-success fw-bold">Conectada</span></p>
+                <p>Usuarios activos: {{ total_usuarios }}</p>
+                <p class="text-muted small">Actualizado hoy</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Acciones rápidas -->
+    <div class="col-md-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header bg-primary text-white">
+                <i class="fas fa-bolt me-2"></i> Acciones rápidas
+            </div>
+            <div class="card-body d-grid gap-2">
+                <a href="{% url 'usuarios:crear_usuario' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i> Crear usuario
+                </a>
+                <a href="{% url 'pacientes:agregar_paciente' %}" class="btn btn-success">
+                    <i class="fas fa-baby me-2"></i> Registrar paciente
+                </a>
+                <a href="{% url 'usuarios:lista_usuarios' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-users me-2"></i> Ver usuarios
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- =======================
+GRÁFICA
+======================= -->
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <i class="fas fa-chart-pie me-2"></i> Distribución de usuarios
+            </div>
+            <div class="card-body">
+                <canvas id="usuariosChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===== DATA SEGURO PARA JS ===== -->
+<div id="chart-data"
+     data-admins="{{ total_admins|default:0 }}"
+     data-doctores="{{ total_doctores|default:0 }}"
+     data-enfermeras="{{ total_enfermeras|default:0 }}"
+     data-pacientes="{{ total_pacientes|default:0 }}">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const dataEl = document.getElementById('chart-data');
+
+    const admins = Number(dataEl.dataset.admins) || 0;
+    const doctores = Number(dataEl.dataset.doctores) || 0;
+    const enfermeras = Number(dataEl.dataset.enfermeras) || 0;
+    const pacientes = Number(dataEl.dataset.pacientes) || 0;
+
+    const canvas = document.getElementById('usuariosChart');
+    if (canvas) {
+        new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Admins', 'Doctores', 'Enfermeras', 'Pacientes'],
+                datasets: [{
+                    data: [admins, doctores, enfermeras, pacientes],
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                cutout: '65%',
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+    }
+
+    document.querySelectorAll('.hover-card').forEach(card => {
+        card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
+        card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+    });
+
+});
+</script>
+
+<style>
+.hover-card {
+    transition: transform .3s ease;
+    cursor: pointer;
+}
+</style>
+
+{% endblock %}

@@ -1,0 +1,981 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Nueva Ficha Prenatal | NeoVida{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'pacientes/css/nuevo_paciente.css' %}">
+<link rel="stylesheet" href="{% static 'pacientes/css/fichas-wizard.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-4">
+    <!-- ================= BREADCRUMB ================= -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'panel_principal' %}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-plus"></i> Nueva Embarazada
+            </li>
+        </ol>
+    </nav>
+    <!-- ================= FORMULARIO PRINCIPAL ================= -->
+    <form method="POST" action="{% url 'pacientes:agregar_paciente' %}" id="pacienteForm">
+        {% csrf_token %}
+        
+        <div class="card shadow-lg border-0 fade-in" style="animation-delay: 0.1s;">
+            
+            <!-- ================= HEADER ================= -->
+            <div class="form-header">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h1 class="h2 fw-bold mb-2">
+                            <i class="fas fa-user-plus me-3"></i>Nueva Ficha Prenatal
+                        </h1>
+                        <p class="mb-0 opacity-75">
+                            Complete la información para registrar una nueva paciente en el sistema
+                        </p>
+                    </div>
+                    <div class="col-md-4 text-md-end">
+                        <div class="d-inline-block bg-white text-primary px-3 py-2 rounded-pill" id="paso-actual">
+                            <i class="fas fa-clipboard-check me-2"></i>Paso <span id="paso-numero">1</span> de 5
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-4">
+                
+                <!-- ================= MENSAJES ================= -->
+                {% if messages %}
+                <div class="messages">
+                    {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+                <!-- ================= TABS ================= -->
+                <ul class="nav nav-tabs" id="patientTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="personal-tab" type="button" role="tab" data-ficha="1">
+                            <i class="fas fa-user me-2"></i>Datos Personales
+                            <span class="badge bg-primary ms-2">1</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link disabled" id="contact-tab" type="button" role="tab" data-ficha="2">
+                            <i class="fas fa-map-marked-alt me-2"></i>Contacto y Ubicación
+                            <span class="badge bg-secondary ms-2">2</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link disabled" id="tutor-tab" type="button" role="tab" data-ficha="3">
+                            <i class="fas fa-users me-2"></i>Responsable Legal
+                            <span class="badge bg-secondary ms-2">3</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link disabled" id="medical-tab" type="button" role="tab" data-ficha="4">
+                            <i class="fas fa-heartbeat me-2"></i>Antecedentes Médicos
+                            <span class="badge bg-secondary ms-2">4</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link disabled" id="obstetric-tab" type="button" role="tab" data-ficha="5">
+                            <i class="fas fa-baby me-2"></i>Datos Obstétricos
+                            <span class="badge bg-secondary ms-2">5</span>
+                        </button>
+                    </li>
+                </ul>
+                <!-- ================= PROGRESO ================= -->
+                <div class="progress mt-3 mb-4" style="height: 10px;">
+                    <div class="progress-bar bg-primary progress-bar-striped progress-bar-animated"
+                        role="progressbar" style="width: 20%;"
+                        id="progress-bar"
+                        aria-valuenow="20" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+                <div class="text-center mb-3">
+                    <small class="text-muted">
+                        Progreso: <span id="progreso-texto">20%</span> •
+                        Ficha <span id="ficha-actual-numero">1</span> de 5
+                    </small>
+                </div>
+                <!-- ================= CONTENIDO TABS ================= -->
+                <div class="tab-content" id="patientTabContent">
+                    <!-- Pestaña 1: Datos Personales -->
+                    <div class="tab-pane fade show active" id="personal" role="tabpanel">
+                        <h4 class="section-title"><i class="fas fa-user me-2"></i>Datos Personales de la Paciente</h4>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Complete la información básica de identificación de la paciente.
+                            <span id="minorAlert" class="d-none"><br><strong>Nota:</strong> Para pacientes menores de edad, algunos campos tienen reglas especiales.</span>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required-field">Nombre</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="nombre" class="form-control" placeholder="Ej: María" required value="{{ request.POST.nombre|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label required-field">Apellido</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-user"></i></span>
+                                    <input type="text" name="apellido" class="form-control" placeholder="Ej: González" required value="{{ request.POST.apellido|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label required-field">Fecha de Nacimiento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-alt"></i></span>
+                                    <input type="date" name="fecha_nacimiento" class="form-control" id="fecha_nacimiento" required value="{{ request.POST.fecha_nacimiento|default:'' }}">
+                                </div>
+                                <small class="form-tip">La edad se calculará automáticamente</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Edad</label>
+                                <div class="input-group">
+                                    <span class="input-group-text">
+                                        <i class="fas fa-birthday-cake"></i>
+                                    </span>
+                                    <input type="number"
+                                        name="edad"
+                                        class="form-control"
+                                        id="edad"
+                                        readonly
+                                        placeholder="Se calculará automáticamente"
+                                        value="{{ request.POST.edad|default:'' }}">
+                                </div>
+                                <div id="ageStatus" class="mt-2"></div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label" id="idLabel">Número de Identificación</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                    <input type="text" name="numero_identificacion" class="form-control" id="numero_identificacion" placeholder="Ej: 12345678A" value="{{ request.POST.numero_identificacion|default:'' }}">
+                                </div>
+                                <small class="form-tip" id="idTip">DNI, pasaporte o documento oficial</small>
+                                <div id="minorIdInfo" class="d-none mt-2">
+                                    <small class="text-muted">
+                                        <i class="fas fa-info-circle me-1"></i>Para menores sin identificación, se generará un código interno.
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Tipo de identificación y sexo -->
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tipo de Identificación</label>
+                                <select name="tipo_identificacion" class="form-select">
+                                    <option value="DNI" {% if request.POST.tipo_identificacion == 'DNI' %}selected{% endif %}>Documento Nacional de Identidad</option>
+                                    <option value="Pasaporte" {% if request.POST.tipo_identificacion == 'Pasaporte' %}selected{% endif %}>Pasaporte</option>
+                                    <option value="Partida Nacimiento" {% if request.POST.tipo_identificacion == 'Partida Nacimiento' %}selected{% endif %}>Partida de Nacimiento</option>
+                                    <option value="Otro" {% if request.POST.tipo_identificacion == 'Otro' %}selected{% endif %}>Otro</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Grupo Sanguíneo</label>
+                                <select name="grupo_sanguineo" class="form-select">
+                                    <option value="Se Desconoce" {% if request.POST.grupo_sanguineo == 'Se Desconoce' or not request.POST.grupo_sanguineo %}selected{% endif %}>Se Desconoce</option>
+                                    <option value="A" {% if request.POST.grupo_sanguineo == 'A' %}selected{% endif %}>A</option>
+                                    <option value="B" {% if request.POST.grupo_sanguineo == 'B' %}selected{% endif %}>B</option>
+                                    <option value="AB" {% if request.POST.grupo_sanguineo == 'AB' %}selected{% endif %}>AB</option>
+                                    <option value="O" {% if request.POST.grupo_sanguineo == 'O' %}selected{% endif %}>O</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Factor RH</label>
+                                <select name="factor_rh" class="form-select">
+                                    <option value="" {% if not request.POST.factor_rh %}selected{% endif %}>No especificado</option>
+                                    <option value="+" {% if request.POST.factor_rh == '+' %}selected{% endif %}>Positivo (+)</option>
+                                    <option value="-" {% if request.POST.factor_rh == '-' %}selected{% endif %}>Negativo (-)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <!-- SUB-SECCIÓN: DATOS DEMOGRÁFICOS -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-globe-americas me-2"></i>Datos Demográficos</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Estado Civil</label>
+                                <select name="estado_civil" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option value="Soltera" {% if request.POST.estado_civil == 'Soltera' %}selected{% endif %}>Soltera</option>
+                                    <option value="Casada" {% if request.POST.estado_civil == 'Casada' %}selected{% endif %}>Casada</option>
+                                    <option value="Unión Libre" {% if request.POST.estado_civil == 'Unión Libre' %}selected{% endif %}>Unión Libre</option>
+                                    <option value="Divorciada" {% if request.POST.estado_civil == 'Divorciada' %}selected{% endif %}>Divorciada</option>
+                                    <option value="Viuda" {% if request.POST.estado_civil == 'Viuda' %}selected{% endif %}>Viuda</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Ocupación</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                                    <input type="text" name="ocupacion" class="form-control" placeholder="Ej: Ama de casa, Estudiante, Enfermera..." value="{{ request.POST.ocupacion|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nivel Educativo</label>
+                                <select name="nivel_educativo" class="form-select">
+                                    <option value="">Seleccionar</option>
+                                    <option value="Ninguno" {% if request.POST.nivel_educativo == 'Ninguno' %}selected{% endif %}>Ninguno</option>
+                                    <option value="Primaria Incompleta" {% if request.POST.nivel_educativo == 'Primaria Incompleta' %}selected{% endif %}>Primaria Incompleta</option>
+                                    <option value="Primaria Completa" {% if request.POST.nivel_educativo == 'Primaria Completa' %}selected{% endif %}>Primaria Completa</option>
+                                    <option value="Secundaria Incompleta" {% if request.POST.nivel_educativo == 'Secundaria Incompleta' %}selected{% endif %}>Secundaria Incompleta</option>
+                                    <option value="Secundaria Completa" {% if request.POST.nivel_educativo == 'Secundaria Completa' %}selected{% endif %}>Secundaria Completa</option>
+                                    <option value="Universitario" {% if request.POST.nivel_educativo == 'Universitario' %}selected{% endif %}>Universitario</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nacionalidad</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-flag"></i></span>
+                                    <input type="text" name="nacionalidad" class="form-control" value="{{ request.POST.nacionalidad|default:'Nicaragüense' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Lugar de Nacimiento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-marker-alt"></i></span>
+                                    <input type="text" name="lugar_nacimiento" class="form-control" placeholder="Ciudad, Departamento" value="{{ request.POST.lugar_nacimiento|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sección para identificación de menores -->
+                        <div class="age-warning d-none" id="minorWarning">
+                            <h6 class="text-warning"><i class="fas fa-exclamation-triangle me-2"></i>Paciente Menor de Edad</h6>
+                            <p class="mb-1">Esta paciente es menor de edad. Es necesario:</p>
+                            <ol class="mb-0">
+                                <li>Registrar información del responsable legal en la pestaña "Responsable Legal"</li>
+                                <li>Si no tiene identificación oficial, el sistema generará un código interno automáticamente</li>
+                                <li>El responsable legal debe firmar el consentimiento informado</li>
+                            </ol>
+                        </div>
+                        <!-- Navegación del wizard -->
+                        <div class="ficha-navegacion mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-secondary btn-anterior" style="display: none;">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </button>
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-primary btn-siguiente">
+                                        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pestaña 2: Contacto y Ubicación -->
+                    <div class="tab-pane fade" id="contact" role="tabpanel">
+                        <h4 class="section-title"><i class="fas fa-map-marked-alt me-2"></i>Datos de Contacto y Ubicación</h4>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Información de contacto y ubicación geográfica de la paciente.
+                        </div>
+                        <!-- DATOS DE CONTACTO -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-phone me-2"></i>Contacto</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono Principal</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-mobile-alt"></i></span>
+                                    <input type="tel" onkeypress="soloNumeros(event)" name="telefono" class="form-control" placeholder="Ej: 8888-8888" inputmode="tel" value="{{ request.POST.telefono|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Teléfono Alternativo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-phone-alt"></i></span>
+                                    <input type="tel" name="telefono_alternativo" class="form-control" placeholder="Ej: 8888-8888" value="{{ request.POST.telefono_alternativo|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Correo Electrónico</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                                    <input type="email" name="correo_electronico" class="form-control" placeholder="ejemplo@email.com" value="{{ request.POST.correo_electronico|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DIRECCIÓN COMPLETA -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-home me-2"></i>Dirección</h5>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Dirección Completa</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map-pin"></i></span>
+                                    <textarea name="direccion" class="form-control" rows="3" placeholder="Dirección exacta (casa, edificio, puntos de referencia)">{{ request.POST.direccion|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Barrio o Comunidad</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-users"></i></span>
+                                    <input type="text" name="barrio_comunidad" class="form-control" placeholder="Nombre del barrio o comunidad" value="{{ request.POST.barrio_comunidad|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Zona</label>
+                                <select name="zona" class="form-select">
+                                    <option value="Urbana" {% if request.POST.zona == 'Urbana' or not request.POST.zona %}selected{% endif %}>Urbana</option>
+                                    <option value="Rural" {% if request.POST.zona == 'Rural' %}selected{% endif %}>Rural</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Municipio</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-city"></i></span>
+                                    <input type="text" name="municipio" class="form-control" placeholder="Ej: Managua, León, Granada..." value="{{ request.POST.municipio|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Departamento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-map"></i></span>
+                                    <input type="text" name="departamento" class="form-control" placeholder="Ej: Managua, Carazo, Masaya..." value="{{ request.POST.departamento|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- DATOS DEL ESTABLECIMIENTO -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-hospital me-2"></i>Datos del Establecimiento de Salud</h5>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Centro de Salud</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-hospital-alt"></i></span>
+                                    <input type="text" name="centro_salud" class="form-control" placeholder="Nombre del centro de salud" value="{{ request.POST.centro_salud|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Código del Establecimiento</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-hashtag"></i></span>
+                                    <input type="text" name="codigo_establecimiento" class="form-control" placeholder="Código asignado" value="{{ request.POST.codigo_establecimiento|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Área de Salud</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clinic-medical"></i></span>
+                                    <input type="text" name="area_salud" class="form-control" placeholder="Área de salud correspondiente" value="{{ request.POST.area_salud|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">SILAIS</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-sitemap"></i></span>
+                                    <input type="text" name="silais" class="form-control" placeholder="Sistema Local de Atención" value="{{ request.POST.silais|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- ASEGURAMIENTO -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-shield-alt me-2"></i>Aseguramiento</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="tiene_seguro" id="tiene_seguro" {% if request.POST.tiene_seguro %}checked{% endif %}>
+                                    <label class="form-check-label" for="tiene_seguro">
+                                        ¿Tiene seguro médico?
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Tipo de Seguro</label>
+                                <input type="text" name="tipo_seguro" class="form-control" placeholder="Ej: Seguro Social, Privado" value="{{ request.POST.tipo_seguro|default:'' }}">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Número de Seguro</label>
+                                <input type="text" name="numero_seguro" class="form-control" placeholder="Número de póliza" value="{{ request.POST.numero_seguro|default:'' }}">
+                            </div>
+                        </div>
+                        <!-- Navegación del wizard -->
+                        <div class="ficha-navegacion mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-secondary btn-anterior">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </button>
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-primary btn-siguiente">
+                                        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pestaña 3: Responsable Legal -->
+                    <div class="tab-pane fade" id="tutor" role="tabpanel">
+                        <h4 class="section-title"><i class="fas fa-users me-2"></i>Responsable Legal</h4>
+                        <div class="alert alert-warning" id="tutorAlert">
+                            <i class="fas fa-exclamation-circle me-2"></i>Esta sección es obligatoria para pacientes menores de edad.
+                        </div>
+                        <div class="tutor-section">
+                            <h5 class="mb-3"><i class="fas fa-user-tie me-2"></i>Datos del Responsable</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Nombre del Responsable</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-user-tie"></i></span>
+                                        <input type="text" name="tutor_nombre" class="form-control" id="tutor_nombre" placeholder="Nombre completo" value="{{ request.POST.tutor_nombre|default:'' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Parentesco</label>
+                                    <select name="tutor_parentesco" class="form-select" id="tutor_parentesco">
+                                        <option value="">Seleccionar</option>
+                                        <option value="Madre" {% if request.POST.tutor_parentesco == 'Madre' %}selected{% endif %}>Madre</option>
+                                        <option value="Padre" {% if request.POST.tutor_parentesco == 'Padre' %}selected{% endif %}>Padre</option>
+                                        <option value="Abuela" {% if request.POST.tutor_parentesco == 'Abuela' %}selected{% endif %}>Abuela</option>
+                                        <option value="Abuelo" {% if request.POST.tutor_parentesco == 'Abuelo' %}selected{% endif %}>Abuelo</option>
+                                        <option value="Tía" {% if request.POST.tutor_parentesco == 'Tía' %}selected{% endif %}>Tía</option>
+                                        <option value="Tío" {% if request.POST.tutor_parentesco == 'Tío' %}selected{% endif %}>Tío</option>
+                                        <option value="Hermana" {% if request.POST.tutor_parentesco == 'Hermana' %}selected{% endif %}>Hermana</option>
+                                        <option value="Hermano" {% if request.POST.tutor_parentesco == 'Hermano' %}selected{% endif %}>Hermano</option>
+                                        <option value="Tutora Legal" {% if request.POST.tutor_parentesco == 'Tutora Legal' %}selected{% endif %}>Tutora Legal</option>
+                                        <option value="Tutor Legal" {% if request.POST.tutor_parentesco == 'Tutor Legal' %}selected{% endif %}>Tutor Legal</option>
+                                        <option value="Otro" {% if request.POST.tutor_parentesco == 'Otro' %}selected{% endif %}>Otro</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Identificación del Responsable</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-id-card"></i></span>
+                                        <input type="text" name="tutor_identificacion" class="form-control" id="tutor_identificacion" placeholder="DNI del responsable" value="{{ request.POST.tutor_identificacion|default:'' }}">
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Teléfono de Contacto</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-phone"></i></span>
+                                        <input type="tel" name="tutor_telefono" class="form-control" id="tutor_telefono" placeholder="Ej: 555-1234" value="{{ request.POST.tutor_telefono|default:'' }}">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label">Dirección</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"><i class="fas fa-home"></i></span>
+                                        <textarea name="tutor_direccion" class="form-control" id="tutor_direccion" rows="2" placeholder="Dirección completa">{{ request.POST.tutor_direccion|default:'' }}</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="consentimiento" name="consentimiento" {% if request.POST.consentimiento %}checked{% endif %}>
+                                <label class="form-check-label" for="consentimiento">
+                                    <strong>Consentimiento Informado</strong><br>
+                                    Declaro ser el responsable legal de la paciente menor de edad y autorizo su atención médica prenatal.
+                                </label>
+                            </div>
+                        </div>
+                        <!-- Navegación del wizard -->
+                        <div class="ficha-navegacion mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-secondary btn-anterior">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </button>
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-primary btn-siguiente">
+                                        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pestaña 4: Antecedentes Médicos -->
+                    <div class="tab-pane fade" id="medical" role="tabpanel">
+                        <h4 class="section-title"><i class="fas fa-heartbeat me-2"></i>Antecedentes Personales</h4>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Registre las condiciones médicas previas y hábitos de la paciente.
+                        </div>
+                        <!-- ENFERMEDADES CRÓNICAS -->
+                        <div class="checkbox-group mb-4">
+                            <h6 class="mb-3 text-muted">Seleccione las condiciones médicas previas:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="diabetes" class="me-2" {% if request.POST.diabetes %}checked{% endif %}>
+                                        <i class="fas fa-syringe me-2 text-danger"></i>Diabetes
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="hipertension" class="me-2" {% if request.POST.hipertension %}checked{% endif %}>
+                                        <i class="fas fa-heartbeat me-2 text-danger"></i>Hipertensión
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="tbc" class="me-2" {% if request.POST.tbc %}checked{% endif %}>
+                                        <i class="fas fa-lungs me-2 text-warning"></i>Tuberculosis (TBC)
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="asma" class="me-2" {% if request.POST.asma %}checked{% endif %}>
+                                        <i class="fas fa-wind me-2 text-info"></i>Asma
+                                    </label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="cardiopatia" class="me-2" {% if request.POST.cardiopatia %}checked{% endif %}>
+                                        <i class="fas fa-heart me-2 text-danger"></i>Cardiopatía
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="nefropatia" class="me-2" {% if request.POST.nefropatia %}checked{% endif %}>
+                                        <i class="fas fa-kidneys me-2 text-info"></i>Nefropatía
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="epilepsia" class="me-2" {% if request.POST.epilepsia %}checked{% endif %}>
+                                        <i class="fas fa-brain me-2 text-warning"></i>Epilepsia
+                                    </label>
+                                    <label class="d-flex align-items-center">
+                                        <input type="checkbox" name="vih" class="me-2" {% if request.POST.vih %}checked{% endif %}>
+                                        <i class="fas fa-virus me-2 text-danger"></i>VIH/SIDA
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- HÁBITOS Y ESTILO DE VIDA -->
+                        <h6 class="mb-3 text-muted">Hábitos y estilo de vida:</h6>
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="tabaquismo" id="tabaquismo" {% if request.POST.tabaquismo %}checked{% endif %}>
+                                    <label class="form-check-label" for="tabaquismo">
+                                        <i class="fas fa-smoking me-1"></i>Tabaquismo
+                                    </label>
+                                </div>
+                                <div class="ms-4">
+                                    <input type="number" name="cigarrillos_dia" class="form-control form-control-sm" placeholder="Cigarrillos/día" value="{{ request.POST.cigarrillos_dia|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="alcoholismo" id="alcoholismo" {% if request.POST.alcoholismo %}checked{% endif %}>
+                                    <label class="form-check-label" for="alcoholismo">
+                                        <i class="fas fa-wine-glass-alt me-1"></i>Alcoholismo
+                                    </label>
+                                </div>
+                                <div class="ms-4">
+                                    <input type="text" name="frecuencia_alcohol" class="form-control form-control-sm" placeholder="Frecuencia" value="{{ request.POST.frecuencia_alcohol|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="checkbox" name="drogas" id="drogas" {% if request.POST.drogas %}checked{% endif %}>
+                                    <label class="form-check-label" for="drogas">
+                                        <i class="fas fa-pills me-1"></i>Drogas
+                                    </label>
+                                </div>
+                                <div class="ms-4">
+                                    <input type="text" name="tipo_drogas" class="form-control form-control-sm" placeholder="Tipo" value="{{ request.POST.tipo_drogas|default:'' }}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Actividad Física</label>
+                                <input type="text" name="actividad_fisica" class="form-control" placeholder="Ej: Caminata 30min/día" value="{{ request.POST.actividad_fisica|default:'' }}">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Hábitos Alimenticios</label>
+                                <textarea name="alimentacion" class="form-control" rows="2" placeholder="Describa hábitos alimenticios...">{{ request.POST.alimentacion|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Cirugías Previas</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-syringe"></i></span>
+                                    <textarea name="cirugias" class="form-control" rows="3" placeholder="Describa cualquier cirugía previa...">{{ request.POST.cirugias|default:'' }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Enfermedades Crónicas</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-file-medical-alt"></i></span>
+                                    <textarea name="enfermedades_cronicas" class="form-control" rows="3" placeholder="Describa enfermedades crónicas...">{{ request.POST.enfermedades_cronicas|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Medicación Actual</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-pills"></i></span>
+                                    <textarea name="medicacion" class="form-control" rows="3" placeholder="Lista de medicamentos actuales, dosis y frecuencia...">{{ request.POST.medicacion|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- SECCIÓN: ANTECEDENTES FAMILIARES -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-family me-2"></i>Antecedentes Familiares</h5>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-dna me-2"></i>Historial de enfermedades en familiares directos (padres, hermanos, abuelos).
+                        </div>
+                        <div class="checkbox-group mb-4">
+                            <h6 class="mb-3 text-muted">Enfermedades familiares:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="diabetes_familiar" class="me-2" {% if request.POST.diabetes_familiar %}checked{% endif %}>
+                                            <i class="fas fa-syringe me-2 text-danger"></i>Diabetes
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <input type="text" name="parentesco_diabetes" class="form-control form-control-sm" placeholder="Parentesco (ej: Madre, Padre)" value="{{ request.POST.parentesco_diabetes|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="hipertension_familiar" class="me-2" {% if request.POST.hipertension_familiar %}checked{% endif %}>
+                                            <i class="fas fa-heartbeat me-2 text-danger"></i>Hipertensión
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <input type="text" name="parentesco_hipertension" class="form-control form-control-sm" placeholder="Parentesco" value="{{ request.POST.parentesco_hipertension|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="cardiopatias_familiar" class="me-2" {% if request.POST.cardiopatias_familiar %}checked{% endif %}>
+                                            <i class="fas fa-heart me-2 text-danger"></i>Cardiopatías
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <input type="text" name="parentesco_cardiopatias" class="form-control form-control-sm" placeholder="Parentesco" value="{{ request.POST.parentesco_cardiopatias|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="cancer_familiar" class="me-2" {% if request.POST.cancer_familiar %}checked{% endif %}>
+                                            <i class="fas fa-user-md me-2 text-warning"></i>Cáncer
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <input type="text" name="tipo_cancer_familiar" class="form-control form-control-sm mb-1" placeholder="Tipo de cáncer" value="{{ request.POST.tipo_cancer_familiar|default:'' }}">
+                                            <input type="text" name="parentesco_cancer" class="form-control form-control-sm" placeholder="Parentesco" value="{{ request.POST.parentesco_cancer|default:'' }}">
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="malformaciones_familiar" class="me-2" {% if request.POST.malformaciones_familiar %}checked{% endif %}>
+                                            <i class="fas fa-exclamation-triangle me-2 text-warning"></i>Malformaciones
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <textarea name="tipo_malformaciones" class="form-control form-control-sm" rows="2" placeholder="Describa el tipo de malformaciones">{{ request.POST.tipo_malformaciones|default:'' }}</textarea>
+                                        </div>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="d-flex align-items-center">
+                                            <input type="checkbox" name="gemelar_familiar" class="me-2" {% if request.POST.gemelar_familiar %}checked{% endif %}>
+                                            <i class="fas fa-baby me-2 text-info"></i>Historial gemelar
+                                        </label>
+                                        <div class="ms-4 mt-1">
+                                            <input type="text" name="parentesco_gemelar" class="form-control form-control-sm" placeholder="Parentesco" value="{{ request.POST.parentesco_gemelar|default:'' }}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Otros Antecedentes Familiares</label>
+                                <textarea name="otros_antecedentes" class="form-control" rows="3" placeholder="Describa otros antecedentes familiares relevantes...">{{ request.POST.otros_antecedentes|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <!-- Navegación del wizard -->
+                        <div class="ficha-navegacion mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-secondary btn-anterior">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </button>
+                                <div class="ms-auto">
+                                    <button type="button" class="btn btn-primary btn-siguiente">
+                                        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Pestaña 5: Datos Obstétricos -->
+                    <div class="tab-pane fade" id="obstetric" role="tabpanel">
+                        <h4 class="section-title"><i class="fas fa-baby me-2"></i>Datos Obstétricos y Embarazo Actual</h4>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>Información sobre embarazos, partos y complicaciones previas.
+                        </div>
+                        <!-- ANTECEDENTES OBSTÉTRICOS -->
+                        <h5 class="mb-3"><i class="fas fa-history me-2"></i>Antecedentes Obstétricos</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">N° Embarazos (Gestas)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-baby"></i></span>
+                                    <input type="number" name="num_embarazos" class="form-control" value="{{ request.POST.num_embarazos|default:'0' }}" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">N° Partos</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-baby-carriage"></i></span>
+                                    <input type="number" name="num_partos" class="form-control" value="{{ request.POST.num_partos|default:'0' }}" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">N° Cesáreas</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-procedures"></i></span>
+                                    <input type="number" name="num_cesareas" class="form-control" value="{{ request.POST.num_cesareas|default:'0' }}" min="0">
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">N° Abortos</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-times-circle"></i></span>
+                                    <input type="number" name="num_abortos" class="form-control" value="{{ request.POST.num_abortos|default:'0' }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Hijos Vivos</label>
+                                <input type="number" name="num_hijos_vivos" class="form-control" value="{{ request.POST.num_hijos_vivos|default:'0' }}" min="0">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Edad Menarquia</label>
+                                <input type="number" name="menarquia" class="form-control" placeholder="Años" value="{{ request.POST.menarquia|default:'' }}" min="8" max="20">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Complicaciones Obstétricas Previas</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-exclamation-triangle"></i></span>
+                                    <textarea name="complicaciones" class="form-control" rows="3" placeholder="Describa complicaciones en embarazos anteriores...">{{ request.POST.complicaciones|default:'' }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- EMBARAZO ACTUAL -->
+                        <h5 class="mt-4 mb-3"><i class="fas fa-venus me-2"></i>Embarazo Actual</h5>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">FUR (Fecha Última Regla)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-calendar-day"></i></span>
+                                    <input type="date" name="fur" class="form-control" id="fur" value="{{ request.POST.fur|default:'' }}">
+                                </div>
+                                <small class="form-tip">Fecha de la última menstruación</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Semanas de Embarazo</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-clock"></i></span>
+                                    <input type="number" name="semanas_embarazo" class="form-control" value="{{ request.POST.semanas_embarazo|default:'0' }}" min="0" max="45" id="semanas_embarazo">
+                                </div>
+                                <small class="form-tip">Semanas de gestación actuales</small>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Nivel de Riesgo</label>
+                                <select name="riesgo" class="form-select">
+                                    <option value="">No especificado</option>
+                                    <option value="Bajo" {% if request.POST.riesgo == 'Bajo' %}selected{% endif %}>Bajo</option>
+                                    <option value="Medio" {% if request.POST.riesgo == 'Medio' %}selected{% endif %}>Medio</option>
+                                    <option value="Alto" {% if request.POST.riesgo == 'Alto' %}selected{% endif %}>Alto</option>
+                                </select>
+                                <small class="form-tip">Clasificación de riesgo obstétrico</small>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Peso Anterior al Embarazo (kg)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-weight"></i></span>
+                                    <input type="number" step="0.1" name="peso_anterior" class="form-control" value="{{ request.POST.peso_anterior|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Talla (cm)</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="fas fa-ruler-vertical"></i></span>
+                                    <input type="number" name="talla" class="form-control" min="100" max="250" value="{{ request.POST.talla|default:'' }}">
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Primer Control</label>
+                                <input type="date" name="primer_control" class="form-control" value="{{ request.POST.primer_control|default:'' }}">
+                            </div>
+                        </div>
+                        <!-- SÍNTOMAS ACTUALES -->
+                        <h6 class="mt-4 mb-3 text-muted">Síntomas actuales:</h6>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="nauseas" id="nauseas" {% if request.POST.nauseas %}checked{% endif %}>
+                                    <label class="form-check-label" for="nauseas">
+                                        <i class="fas fa-tired me-1"></i>Náuseas
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vomitos" id="vomitos" {% if request.POST.vomitos %}checked{% endif %}>
+                                    <label class="form-check-label" for="vomitos">
+                                        <i class="fas fa-procedures me-1"></i>Vómitos
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="mareos" id="mareos" {% if request.POST.mareos %}checked{% endif %}>
+                                    <label class="form-check-label" for="mareos">
+                                        <i class="fas fa-dizzy me-1"></i>Mareos
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="edemas" id="edemas" {% if request.POST.edemas %}checked{% endif %}>
+                                    <label class="form-check-label" for="edemas">
+                                        <i class="fas fa-swelling me-1"></i>Edemas
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="cefalea" id="cefalea" {% if request.POST.cefalea %}checked{% endif %}>
+                                    <label class="form-check-label" for="cefalea">
+                                        <i class="fas fa-head-side-virus me-1"></i>Cefalea
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="vision_borrosa" id="vision_borrosa" {% if request.POST.vision_borrosa %}checked{% endif %}>
+                                    <label class="form-check-label" for="vision_borrosa">
+                                        <i class="fas fa-eye me-1"></i>Visión borrosa
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="dolor_abdominal" id="dolor_abdominal" {% if request.POST.dolor_abdominal %}checked{% endif %}>
+                                    <label class="form-check-label" for="dolor_abdominal">
+                                        <i class="fas fa-stomach me-1"></i>Dolor abdominal
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-3 mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="sangrado" id="sangrado" {% if request.POST.sangrado %}checked{% endif %}>
+                                    <label class="form-check-label" for="sangrado">
+                                        <i class="fas fa-tint me-1"></i>Sangrado
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Otros Síntomas</label>
+                                <textarea name="otros_sintomas" class="form-control" rows="2" placeholder="Describa otros síntomas...">{{ request.POST.otros_sintomas|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Factores de Riesgo</label>
+                                <textarea name="factores_riesgo" class="form-control" rows="3" placeholder="Describa factores de riesgo identificados...">{{ request.POST.factores_riesgo|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label">Observaciones</label>
+                                <textarea name="observaciones_embarazo" class="form-control" rows="3" placeholder="Observaciones adicionales sobre el embarazo actual...">{{ request.POST.observaciones_embarazo|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <!-- Navegación del wizard -->
+                        <div class="ficha-navegacion mt-4 pt-4 border-top">
+                            <div class="d-flex justify-content-between">
+                                <button type="button" class="btn btn-secondary btn-anterior">
+                                    <i class="fas fa-arrow-left me-2"></i>Anterior
+                                </button>
+                                <div class="ms-auto">
+                                    <!-- Botón Siguiente oculto en última ficha -->
+                                    <button type="button" class="btn btn-primary btn-siguiente" style="display: none;">
+                                        Siguiente <i class="fas fa-arrow-right ms-2"></i>
+                                    </button>
+                                    
+                                    <!-- Botón Guardar del wizard -->
+                                    <button type="button" class="btn btn-success btn-guardar">
+                                        <i class="fas fa-save me-2"></i>Guardar Ficha
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Fin de tab-content -->
+            </div> <!-- Fin de card-body -->
+            <!-- ================= FOOTER DE TARJETA ================= -->
+            <div class="card-footer bg-light py-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>Protocolo especial aplica para menores de edad
+                        </small>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <small class="text-muted">
+                            <i class="fas fa-user-md me-1"></i>Sistema de Gestión Prenatal - NeoVida
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div> <!-- Fin de card -->
+        <!-- ================= BOTONES FINALES ================= -->
+        <div class="d-flex justify-content-between mt-5 pt-4 border-top">
+            <div>
+                <button type="button" class="btn btn-outline-danger" id="limpiar-todo">
+                    <i class="fas fa-undo me-2"></i>Limpiar Todo
+                </button>
+                
+                
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </a>
+            </div>
+            
+            <div>
+                <button type="submit" class="btn btn-custom-primary">
+                    <i class="fas fa-save me-2"></i>Guardar Ficha Completa
+                </button>
+            </div>
+        </div>
+    </form> <!-- Fin del formulario principal -->
+</div> <!-- Fin de container -->
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- PRIMERO: jQuery si usas Bootstrap 4/5 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- SEGUNDO: Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- TERCERO: Tus scripts -->
+<script src="{% static 'pacientes/js/calcular_edad.js' %}"></script>
+<script src="{% static 'pacientes/js/fichas-wizard.js' %}"></script>
+<script src="{% static 'pacientes/js/nuevo_paciente.js' %}"></script>
+{% endblock %}

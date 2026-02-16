@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load tz %}
+
+{% block title %}Agenda Prenatal | NeoVida{% endblock %}
+
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">
+            <i class="fas fa-calendar-check text-primary me-2"></i>
+            Agenda Prenatal
+        </h2>
+        <p class="text-muted mb-0">
+            Control y seguimiento de citas prenatales
+        </p>
+    </div>
+
+    <span class="badge bg-light border text-dark fs-6 px-3 py-2">
+        <i class="fas fa-calendar-day me-1 text-primary"></i>
+        {% now "d/m/Y" %}
+    </span>
+</div>
+
+<div class="card shadow-sm border-0">
+    <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
+
+            <thead class="table-light text-uppercase small">
+                <tr>
+                    <th>Paciente</th>
+                    <th>Edad</th>
+                    <th>Fecha & Hora</th>
+                    <th>Profesional</th>
+                    <th class="text-center">Estado</th>
+                    <th class="text-end">Acción</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for c in citas %}
+                <tr>
+
+                    <!-- PACIENTE -->
+                    <td>
+                        <div class="fw-semibold">
+                            {{ c.embarazo.expediente.paciente.nombre_completo }}
+                        </div>
+                        <small class="text-muted">
+                            Embarazos: {{ c.embarazo.numero_embarazos }}
+                        </small>
+                    </td>
+
+                    <!-- EDAD -->
+                    <td>
+                        <span class="badge bg-light text-dark">
+                            {{ c.embarazo.expediente.paciente.edad }} años
+                        </span>
+                    </td>
+
+                    <!-- FECHA Y HORA -->
+                    <td>
+                        <div class="fw-semibold">
+                            {{ c.proxima_cita|localtime|date:"d/m/Y" }}
+                        </div>
+                        <small class="text-muted">
+                            {{ c.proxima_cita|localtime|date:"H:i" }}
+                        </small>
+                    </td>
+
+                    <!-- PROFESIONAL -->
+                    <td>
+                        <i class="fas fa-user-md text-primary me-1"></i>
+                        {{ c.usuario.get_full_name|default:c.usuario.username }}
+                    </td>
+
+                    <!-- ESTADO -->
+                    <td class="text-center">
+                        {% if c.atendida %}
+                            <span class="badge rounded-pill bg-secondary px-3">
+                                <i class="fas fa-check-circle me-1"></i>
+                                Atendida
+                            </span>
+                        {% elif c.proxima_cita|date:"Y-m-d" == now|date:"Y-m-d" %}
+                            <span class="badge rounded-pill bg-success px-3">
+                                <i class="fas fa-clock me-1"></i>
+                                Hoy
+                            </span>
+                        {% elif c.proxima_cita < now %}
+                            <span class="badge rounded-pill bg-danger px-3">
+                                <i class="fas fa-exclamation-triangle me-1"></i>
+                                Vencida
+                            </span>
+                        {% else %}
+                            <span class="badge rounded-pill bg-warning text-dark px-3">
+                                <i class="fas fa-hourglass-half me-1"></i>
+                                Pendiente
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- ACCIÓN -->
+                    <td class="text-end">
+    {% if not c.atendida and c.proxima_cita >= now %}
+        <a href="{% url 'expedientes:ver_expediente' c.embarazo.expediente.paciente.id %}"
+           class="btn btn-sm btn-success">
+            <i class="fas fa-stethoscope me-1"></i>
+            Atender
+        </a>
+    {% elif c.atendida %}
+        <span class="badge bg-secondary">Atendida</span>
+    {% else %}
+        <span class="text-muted small">—</span>
+    {% endif %}
+</td>
+
+
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="fas fa-calendar-times fa-2x mb-2"></i>
+                        <br>
+                        No hay citas programadas
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,155 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+    <title>{% block title %}NeoVida{% endblock %}</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Sidebar CSS -->
+    <link rel="stylesheet" href="{% static 'css/sidebar.css' %}">
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ================= TOPBAR ================= -->
+<header class="topbar">
+    <!-- BOTÓN HAMBURGUESA - VISIBLE EN TODAS LAS RESOLUCIONES -->
+    <button id="toggleSidebar" class="btn btn-light sidebar-toggle-btn">
+        <i class="fas fa-bars"></i>
+        <span class="d-none d-md-inline ms-2">Menú</span>
+    </button>
+
+    <div class="topbar-right">
+        <!-- USUARIO LOGEADO -->
+    <div class="user-info">
+        <i class="fas fa-user-circle user-icon"></i>
+        <div class="user-details">
+            <span class="user-name">{{ request.user.username }}</span>
+            <span class="user-role">
+                {% if request.user.rol == 'ADMIN' %}
+                    Administrador
+                {% elif request.user.rol == 'DOCTOR' %}
+                    Doctor
+                {% elif request.user.rol == 'ENFERMERA' %}
+                    Enfermera
+                {% else %}
+                    Usuario
+                {% endif %}
+            </span>
+        </div>
+    </div>
+        <span class="d-none d-md-inline">
+            <i class="fas fa-calendar"></i> {% now "d/m/Y" %}
+        </span>
+    </div>
+</header>
+
+<!-- ================= LAYOUT ================= -->
+<div class="layout">
+
+    <!-- ========== SIDEBAR ========== -->
+    <aside id="sidebar" class="sidebar">
+        <div class="sidebar-inner">
+
+            <!-- LOGO Y BOTÓN CERRAR (SOLO MÓVIL) -->
+            <div class="sidebar-header">
+                <h1>
+                    <i class="fas fa-heartbeat"></i>
+                    <span class="sidebar-logo-text">NeoVida</span>
+                </h1>
+                <button class="btn btn-close sidebar-close-btn d-lg-none"></button>
+            </div>
+
+            <!-- NAV -->
+            <nav class="sidebar-content">
+                <!-- PANEL -->
+                <a href="{% url 'panel_principal' %}" class="sidebar-item">
+                    <i class="fas fa-chart-bar icon"></i>
+                    <span>Panel Principal</span>
+                </a>
+
+                <!-- AGREGAR PACIENTE -->
+                {% if request.user.rol == 'ADMIN' or request.user.rol == 'DOCTOR' or request.user.rol == 'ENFERMERA' %}
+                <a href="{% url 'pacientes:agregar_paciente' %}" class="sidebar-item">
+                    <i class="fas fa-user-plus icon"></i>
+                    <span>Agregar paciente</span>
+                </a>
+                {% endif %}
+
+                <a href="{% url 'pacientes:lista_pacientes' %}" class="sidebar-item">
+                    <i class="fas fa-list icon"></i>
+                    <span>Lista de pacientes</span>
+                </a>
+
+                <a href="{% url 'citas:agenda' %}" class ="sidebar-item">
+                    <i class="fas fa-calendar-check icon"></i>
+                    <span>Control de Citas</span>
+                </a>
+                <!-- ADMIN - SUBMENÚ DESPLEGABLE -->
+                {% if request.user.rol == 'ADMIN' %}
+                <div class="sidebar-submenu">
+                    <a href="#" class="sidebar-item submenu-toggle">
+                        <i class="fas fa-users-cog icon"></i>
+                        <span>Gestión de Usuarios</span>
+                        <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                    
+                    <div class="submenu">
+                        <a href="{% url 'usuarios:crear_usuario' %}" class="sidebar-item sub-item">
+                            <i class="fas fa-user-plus icon"></i>
+                            <span>Crear usuario</span>
+                        </a>
+                        <a href="{% url 'usuarios:lista_usuarios' %}" class="sidebar-item sub-item">
+                            <i class="fas fa-list icon"></i>
+                            <span>Lista de usuarios</span>
+                        </a>
+                    </div>
+                </div>
+                {% endif %}
+            </nav>
+
+            <!-- FOOTER -->
+            <div class="sidebar-footer">
+                <form method="post" action="{% url 'usuarios:logout' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-item text-danger w-100">
+                        <i class="fas fa-sign-out-alt icon"></i>
+                        <span>Cerrar sesión</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </aside>
+
+    <!-- OVERLAY PARA MÓVIL (SOLO SE MUESTRA EN MÓVIL) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- ========== CONTENIDO ========== -->
+    <main class="content">
+
+    {% include "partials/messages.html" %}
+
+    {% block content %}{% endblock %}
+
+    </main>
+
+</div>
+
+<!-- ================= JS ================= -->
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Sidebar JS -->
+<script src="{% static 'js/sidebar.js' %}"></script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>

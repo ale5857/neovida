@@ -1,0 +1,91 @@
+{% extends "dashboard/dashboard_base.html" %}
+
+{% block dashboard_title %}Panel del Doctor{% endblock %}
+
+{% block dashboard_content %}
+
+<!-- ================= TARJETAS RESUMEN ================= -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-calendar-day fa-2x text-primary"></i>
+                <h6 class="mt-2">Citas hoy</h6>
+                <h3>{{ citas_hoy|length }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x text-success"></i>
+                <h6 class="mt-2">Pacientes</h6>
+                <h3>{{ total_pacientes }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card text-center shadow-sm">
+            <div class="card-body">
+                <i class="fas fa-bell fa-2x text-warning"></i>
+                <h6 class="mt-2">Alertas</h6>
+                <h3>{{ alertas }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= CITAS DE HOY ================= -->
+<div class="card shadow-sm mb-4">
+    <div class="card-header bg-primary text-white">
+        <i class="fas fa-calendar-check me-2"></i> Citas de hoy
+    </div>
+    <div class="card-body">
+        <ul class="list-group">
+            {% for consulta in citas_hoy %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        {{ consulta.embarazo.expediente.paciente.nombre_completo }}
+                    </span>
+                    <span class="badge bg-secondary">
+                        {{ consulta.proxima_cita|date:"H:i" }}
+                    </span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted text-center">
+                    No hay citas programadas hoy
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+<!-- ================= AGENDA SEMANAL ================= -->
+<div class="card shadow-sm">
+    <div class="card-header bg-info text-white">
+        <i class="fas fa-calendar-week me-2"></i> Agenda semanal
+    </div>
+    <div class="card-body">
+        <ul class="list-group">
+            {% for consulta in agenda_semanal %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <span>
+                        {{ consulta.proxima_cita|date:"d/m/Y" }} –
+                        {{ consulta.embarazo.expediente.paciente.nombre_completo }}
+                    </span>
+                    <span class="badge bg-secondary">
+                        {{ consulta.proxima_cita|date:"l" }}
+                    </span>
+                </li>
+            {% empty %}
+                <li class="list-group-item text-muted text-center">
+                    No hay citas programadas esta semana
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+{% endblock %}

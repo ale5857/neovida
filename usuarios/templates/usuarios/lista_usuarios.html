@@ -1,0 +1,475 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h3 class="mb-4"><i class="fas fa-users me-2"></i>Lista de Usuarios</h3>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th><i class="fas fa-user me-1"></i> Usuario</th>
+                        <th><i class="fas fa-user-tag me-1"></i> Rol</th>
+                        <th><i class="fas fa-circle me-1"></i> Estado</th>
+                        <th style="width: 300px;"><i class="fas fa-cogs me-1"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in usuarios %}
+                    <tr>
+                        <td class="fw-semibold text-truncate" style="max-width: 180px;">{{ u.username }}</td>
+                        <td>
+                            <div class="d-flex flex-wrap align-items-center gap-2">
+                            <span class="badge bg-info text-dark">{{ u.rol }}</span>
+                        </td>
+                        <td>
+                            {% if u.is_active %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle me-1"></i> Activo
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times-circle me-1"></i> Inactivo
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <!-- BOTÓN EDITAR - NUEVA VERSIÓN -->
+                            <button type="button" 
+                                    class="btn btn-sm btn-warning btn-editar-usuario"
+                                    data-user-id="{{ u.id }}">
+                                <i class="fas fa-edit"></i>
+                                <span class="ms-1 d-none d-sm-inline">Editar</span>
+                            </button>
+
+                            <!-- ACTIVAR/DESACTIVAR -->
+                            {% if u != request.user %}
+                            <a href="{% url 'usuarios:toggle_usuario' u.id %}"
+                               class="btn btn-sm {% if u.is_active %}btn-outline-danger{% else %}btn-outline-success{% endif %}"
+                               onclick="return confirm('¿Seguro que deseas {% if u.is_active %}desactivar{% else %}activar{% endif %} este usuario?')">
+                                {% if u.is_active %}
+                                    <i class="fas fa-user-slash"></i>
+                                    <span class="ms-1 d-none d-sm-inline">Desactivar</span>
+                                {% else %}
+                                    <i class="fas fa-user-check"></i>
+                                    <span class="ms-1 d-none d-sm-inline">Activar</span>
+                                {% endif %}
+                            </a>
+                            {% else %}
+                            <span class="text-muted small">
+                                <i class="fas fa-info-circle me-1"></i> Tu cuenta
+                            </span>
+                            {% endif %}
+                            
+                            {% if u != request.user %}
+    <button type="button"
+            class="btn btn-sm btn-outline-danger btn-eliminar-usuario"
+            data-user-id="{{ u.id }}">
+        <i class="fas fa-trash"></i>
+        <span class="ms-1 d-none d-sm-inline">Eliminar</span>
+    </button>
+{% endif %}
+                            </div>
+                        </td>
+                        
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center py-4">
+                            <div class="text-muted">
+                                <i class="fas fa-users-slash fa-2x mb-3"></i>
+                                <p class="mb-0">No hay usuarios registrados</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+            </div>
+</div>
+
+<!-- MODAL DE EDICIÓN -->
+<div class="modal fade" id="modalEditarUsuario" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-edit me-2"></i>
+                    <span id="modalTitulo">Editar Usuario</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <form id="formEditarUsuario" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="inputUserId" name="user_id">
+                
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="inputUsername" class="form-label fw-semibold">
+                            <i class="fas fa-user me-1"></i> Nombre de Usuario
+                        </label>
+                        <input type="text" 
+                               id="inputUsername" 
+                               class="form-control" 
+                               name="username" 
+                               required
+                               placeholder="Ej: juan.perez">
+                        <div class="form-text text-muted">
+                            <small><i class="fas fa-info-circle me-1"></i> Identificador único para acceder al sistema</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="inputPassword" class="form-label fw-semibold">
+                            <i class="fas fa-lock me-1"></i> Nueva Contraseña
+                        </label>
+                        <input type="password" 
+                               id="inputPassword" 
+                               class="form-control" 
+                               name="password"
+                               placeholder="Dejar vacío para no cambiar"
+                               autocomplete="new-password">
+                        <div class="form-text text-muted">
+                            <small><i class="fas fa-info-circle me-1"></i> Mínimo 8 caracteres. Déjalo vacío para mantener la actual.</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardarUsuario">
+                        <i class="fas fa-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- TODO EL JAVASCRIPT INLINE - SIN ARCHIVOS EXTERNOS -->
+<script>
+// ====================================================
+// SISTEMA DE EDICIÓN DE USUARIOS - COMPLETO
+// ====================================================
+console.log('🚀 Inicializando sistema de edición de usuarios...');
+
+// Variables globales
+let modalEditar = null;
+let usuarioActualId = null;
+
+/**
+ * Inicialización cuando el DOM esté listo
+ */
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM cargado - Configurando editor de usuarios');
+    
+    // 1. Configurar botones de editar
+    configurarBotonesEditar();
+    
+    // 2. Inicializar modal
+    inicializarModal();
+    
+    // 3. Configurar formulario
+    configurarFormulario();
+    
+    console.log('✅ Sistema de edición listo');
+});
+
+/**
+ * Configura todos los botones de editar
+ */
+function configurarBotonesEditar() {
+    const botones = document.querySelectorAll('.btn-editar-usuario');
+    console.log(`🔍 Encontrados ${botones.length} botones de editar`);
+    
+    botones.forEach(boton => {
+        // Remover cualquier evento previo
+        boton.replaceWith(boton.cloneNode(true));
+    });
+    
+    // Re-asignar eventos (ahora que están clonados)
+    document.querySelectorAll('.btn-editar-usuario').forEach(boton => {
+        boton.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const userId = this.getAttribute('data-user-id');
+            const username = this.closest('tr').querySelector('td:first-child').textContent.trim();
+            
+            console.log(`📝 Editando usuario: ${username} (ID: ${userId})`);
+            abrirModalEdicion(userId, username);
+        });
+    });
+}
+
+/**
+ * Inicializa el modal de Bootstrap
+ */
+function inicializarModal() {
+    const modalElement = document.getElementById('modalEditarUsuario');
+    
+    if (!modalElement) {
+        console.error('❌ Modal #modalEditarUsuario no encontrado');
+        return;
+    }
+    
+    try {
+        modalEditar = new bootstrap.Modal(modalElement);
+        console.log('✅ Modal Bootstrap inicializado');
+    } catch (error) {
+        console.error('❌ Error al crear modal:', error);
+    }
+}
+
+/**
+ * Configura el formulario de edición
+ */
+function configurarFormulario() {
+    const formulario = document.getElementById('formEditarUsuario');
+    
+    if (!formulario) {
+        console.error('❌ Formulario #formEditarUsuario no encontrado');
+        return;
+    }
+    
+    formulario.addEventListener('submit', function(event) {
+        event.preventDefault();
+        guardarCambiosUsuario();
+    });
+    
+    // Limpiar al cerrar
+    const modalElement = document.getElementById('modalEditarUsuario');
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        formulario.reset();
+        usuarioActualId = null;
+        document.getElementById('modalTitulo').textContent = 'Editar Usuario';
+    });
+}
+
+/**
+ * Abre el modal para editar un usuario
+ */
+function abrirModalEdicion(userId, username) {
+    console.log(`🎯 Abriendo editor para usuario ID: ${userId}`);
+    
+    if (!modalEditar) {
+        alert('Error: El sistema de edición no está disponible. Recarga la página.');
+        return;
+    }
+    
+    usuarioActualId = userId;
+    
+    // Mostrar datos inmediatos
+    document.getElementById('inputUserId').value = userId;
+    document.getElementById('inputUsername').value = username;
+    document.getElementById('inputPassword').value = '';
+    document.getElementById('modalTitulo').textContent = `Editar: ${username}`;
+    
+    // Mostrar modal
+    modalEditar.show();
+    
+    // Enfocar en el campo de usuario
+    setTimeout(() => {
+        document.getElementById('inputUsername').focus();
+        document.getElementById('inputUsername').select();
+    }, 300);
+}
+
+/**
+ * Guarda los cambios del usuario
+ */
+function guardarCambiosUsuario() {
+    if (!usuarioActualId) {
+        mostrarAlerta('❌ Error: No hay usuario seleccionado', 'danger');
+        return;
+    }
+    
+    const username = document.getElementById('inputUsername').value.trim();
+    const password = document.getElementById('inputPassword').value;
+    const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+    
+    // Validaciones
+    if (!username) {
+        mostrarAlerta('⚠️ El nombre de usuario es obligatorio', 'warning');
+        document.getElementById('inputUsername').focus();
+        return;
+    }
+    
+    if (password && password.length < 8) {
+        mostrarAlerta('⚠️ La contraseña debe tener al menos 8 caracteres', 'warning');
+        document.getElementById('inputPassword').focus();
+        return;
+    }
+    
+    // Mostrar estado de carga
+    const btnGuardar = document.getElementById('btnGuardarUsuario');
+    const textoOriginal = btnGuardar.innerHTML;
+    btnGuardar.disabled = true;
+    btnGuardar.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Guardando...';
+    
+    // Enviar datos al servidor
+    fetch(`/usuarios/editar/${usuarioActualId}/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Accept': 'application/json'
+        },
+        body: new URLSearchParams({
+            username: username,
+            password: password || ''
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`Error ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('✅ Respuesta del servidor:', data);
+        
+        if (data.success) {
+            mostrarAlerta('✅ Usuario actualizado correctamente', 'success');
+            
+            // Cerrar modal y recargar
+            setTimeout(() => {
+                modalEditar.hide();
+                setTimeout(() => location.reload(), 1000);
+            }, 1500);
+            
+        } else {
+            throw new Error(data.error || 'Error desconocido del servidor');
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error al guardar:', error);
+        mostrarAlerta(`❌ Error: ${error.message}`, 'danger');
+    })
+    .finally(() => {
+        // Restaurar botón
+        btnGuardar.disabled = false;
+        btnGuardar.innerHTML = textoOriginal;
+    });
+}
+
+/**
+ * Muestra una alerta temporal
+ */
+function mostrarAlerta(mensaje, tipo = 'info') {
+    // Crear o reutilizar contenedor
+    let contenedorAlertas = document.getElementById('contenedorAlertas');
+    if (!contenedorAlertas) {
+        contenedorAlertas = document.createElement('div');
+        contenedorAlertas.id = 'contenedorAlertas';
+        contenedorAlertas.style.cssText = 'position: fixed; top: 80px; right: 20px; z-index: 9999;';
+        document.body.appendChild(contenedorAlertas);
+    }
+    
+    // Crear alerta
+    const alertaId = 'alerta_' + Date.now();
+    const alertaHTML = `
+        <div id="${alertaId}" 
+             class="alert alert-${tipo} alert-dismissible fade show shadow" 
+             role="alert" 
+             style="min-width: 300px; margin-bottom: 10px;">
+            <div class="d-flex align-items-center">
+                <div class="me-2">
+                    ${tipo === 'success' ? '✅' : tipo === 'warning' ? '⚠️' : '❌'}
+                </div>
+                <div class="flex-grow-1">${mensaje}</div>
+                <button type="button" class="btn-close" onclick="document.getElementById('${alertaId}').remove()"></button>
+            </div>
+        </div>
+    `;
+    
+    contenedorAlertas.insertAdjacentHTML('afterbegin', alertaHTML);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        const alerta = document.getElementById(alertaId);
+        if (alerta) alerta.remove();
+    }, 5000);
+}
+
+/**
+ * Función global para compatibilidad con onclick antiguo
+ */
+window.abrirModal = function(userId) {
+    console.warn('⚠️ Usando función global abrirModal (modo compatibilidad)');
+    const boton = document.querySelector(`.btn-editar-usuario[data-user-id="${userId}"]`);
+    if (boton) {
+        boton.click();
+    } else {
+        // Buscar en la tabla
+        const filas = document.querySelectorAll('tbody tr');
+        for (let fila of filas) {
+            const celdas = fila.querySelectorAll('td');
+            if (celdas.length >= 4) {
+                const botonFila = celdas[3].querySelector('.btn-editar-usuario');
+                if (botonFila && botonFila.getAttribute('data-user-id') == userId) {
+                    botonFila.click();
+                    return;
+                }
+            }
+        }
+        alert(`No se encontró el usuario con ID: ${userId}`);
+    }
+};
+
+// ====================================================
+// ELIMINAR USUARIO
+// ====================================================
+document.querySelectorAll('.btn-eliminar-usuario').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const userId = this.getAttribute('data-user-id');
+
+        if (!confirm('⚠️ ¿Seguro que deseas ELIMINAR este usuario?\n\nEsta acción NO se puede deshacer.')) {
+            return;
+        }
+
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+        fetch(`/usuarios/eliminar/${userId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken,
+                'Accept': 'application/json'
+            }
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                mostrarAlerta('🗑️ Usuario eliminado correctamente', 'success');
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                mostrarAlerta(data.error || 'Error al eliminar', 'danger');
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            mostrarAlerta('Error del servidor', 'danger');
+        });
+    });
+});
+
+// Depuración final
+console.log('✅ Sistema de edición completamente cargado');
+console.log('- Función abrirModal disponible:', typeof window.abrirModal === 'function');
+console.log('- Botones configurados:', document.querySelectorAll('.btn-editar-usuario').length);
+</script>
+
+
+{% endblock %}

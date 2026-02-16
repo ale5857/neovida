@@ -1,0 +1,655 @@
+ {% extends "base.html" %}
+{% load static %}
+
+{% block title %}Crear Nuevo Usuario | Sistema{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/crear_usuario.css' %}">
+<style>
+    .modal-resumen {
+        border: 3px solid #198754;
+    }
+    
+    .modal-resumen .modal-header {
+        background: linear-gradient(135deg, #198754, #157347);
+    }
+    
+    .password-display {
+        font-family: 'Courier New', monospace;
+        font-size: 1.2rem;
+        letter-spacing: 2px;
+        background: #f8f9fa;
+        border: 2px dashed #dc3545;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+    }
+    
+    .badge-rol {
+        font-size: 0.9rem;
+        padding: 0.5em 1em;
+    }
+    
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        background: #0d6efd;
+        color: white;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item">
+                <a href="{% url 'panel_principal' %}">
+                    <i class="fas fa-home"></i> Inicio
+                </a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'usuarios:lista_usuarios' %}">
+                    <i class="fas fa-users"></i> Usuarios
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-plus"></i> Nuevo Usuario
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Card Principal -->
+    <div class="card shadow-lg border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h2 class="h4 mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Crear Nuevo Usuario
+                    </h2>
+                    <p class="mb-0 opacity-75">Complete el formulario para registrar un nuevo usuario en el sistema</p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <span class="badge bg-light text-primary px-3 py-2">
+                        <i class="fas fa-user-shield me-1"></i>Administrador
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card-body p-4">
+            <!-- Mensajes -->
+            {% if messages %}
+            <div class="messages mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    <i class="fas fa-{% if message.tags == 'success' %}check-circle{% else %}exclamation-triangle{% endif %} me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- Errores del formulario -->
+            {% if form.errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <h5 class="alert-heading">
+                    <i class="fas fa-exclamation-circle me-2"></i>Errores en el formulario
+                </h5>
+                <ul class="mb-0">
+                    {% for field in form %}
+                        {% for error in field.errors %}
+                            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                        {% endfor %}
+                    {% endfor %}
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            {% endif %}
+
+            <!-- Formulario -->
+            <form method="post" id="crearUsuarioForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+
+                <!-- Información Básica -->
+                <div class="form-section mb-5">
+                    <h4 class="section-title mb-4">
+                        <i class="fas fa-id-card me-2"></i>Información Básica
+                    </h4>
+
+                    <div class="row">
+                        <!-- Username -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label required-field">
+                                <i class="fas fa-user-circle me-1"></i>Nombre de Usuario
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-at"></i>
+                                </span>
+                                <input type="text" 
+                                    name="{{ form.username.name }}" 
+                                    id="{{ form.username.id_for_label }}"
+                                    class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                    placeholder="ejemplo.usuario"
+                                    value="{{ form.username.value|default:'' }}"
+                                    required
+                                    data-toggle="tooltip"
+                                    data-placement="top"
+                                    title="Solo letras, números y puntos. Mínimo 3 caracteres.">
+                                <div class="invalid-feedback">
+                                    {{ form.username.errors|first|default:"Por favor ingrese un nombre de usuario válido" }}
+                                </div>
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                <i class="fas fa-info-circle me-1"></i>Este será el identificador único para acceder al sistema
+                            </small>
+                            <div class="mt-2" id="username-feedback"></div>
+                        </div>
+
+                        <!-- Email -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label required-field">
+                                <i class="fas fa-envelope me-1"></i>Correo Electrónico
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" 
+                                    name="{{ form.email.name }}" 
+                                    id="{{ form.email.id_for_label }}"
+                                    class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                    placeholder="usuario@empresa.com"
+                                    value="{{ form.email.value|default:'' }}"
+                                    required>
+                                <div class="invalid-feedback">
+                                    {{ form.email.errors|first|default:"Por favor ingrese un correo electrónico válido" }}
+                                </div>
+                            </div>
+                            <small class="form-text text-muted mt-1">
+                                <i class="fas fa-info-circle me-1"></i>Se enviarán notificaciones a este correo
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <!-- Nombre -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.first_name.id_for_label }}" class="form-label required-field">
+                                <i class="fas fa-user me-1"></i>Nombre
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-signature"></i>
+                                </span>
+                                <input type="text" 
+                                    name="{{ form.first_name.name }}" 
+                                    id="{{ form.first_name.id_for_label }}"
+                                    class="form-control {% if form.first_name.errors %}is-invalid{% endif %}"
+                                    placeholder="Juan"
+                                    value="{{ form.first_name.value|default:'' }}"
+                                    required>
+                                <div class="invalid-feedback">
+                                    {{ form.first_name.errors|first|default:"Por favor ingrese el nombre" }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Apellido -->
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.last_name.id_for_label }}" class="form-label required-field">
+                                <i class="fas fa-user me-1"></i>Apellido
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-signature"></i>
+                                </span>
+                                <input type="text" 
+                                    name="{{ form.last_name.name }}" 
+                                    id="{{ form.last_name.id_for_label }}"
+                                    class="form-control {% if form.last_name.errors %}is-invalid{% endif %}"
+                                    placeholder="Pérez"
+                                    value="{{ form.last_name.value|default:'' }}"
+                                    required>
+                                <div class="invalid-feedback">
+                                    {{ form.last_name.errors|first|default:"Por favor ingrese el apellido" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rol y Permisos -->
+                <div class="form-section mb-5">
+                    <h4 class="section-title mb-4">
+                        <i class="fas fa-user-tag me-2"></i>Rol y Permisos
+                    </h4>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.rol.id_for_label }}" class="form-label required-field">
+                                <i class="fas fa-tag me-1"></i>Rol del Usuario
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="fas fa-user-tag"></i>
+                                </span>
+                                <select name="{{ form.rol.name }}" 
+                                        id="{{ form.rol.id_for_label }}"
+                                        class="form-select {% if form.rol.errors %}is-invalid{% endif %}"
+                                        required>
+                                    <option value="" disabled selected>Seleccione un rol</option>
+                                    {% for value, label in form.rol.field.choices %}
+                                        {% if value %}
+                                            <option value="{{ value }}" 
+                                                    {% if form.rol.value == value|stringformat:"s" %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                        {% endif %}
+                                    {% endfor %}
+                                </select>
+                                <div class="invalid-feedback">
+                                    {{ form.rol.errors|first|default:"Por favor seleccione un rol" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Configuración de Contraseña -->
+                <div class="form-section mb-5">
+                    <h4 class="section-title mb-4">
+                        <i class="fas fa-key me-2"></i>Configuración de Contraseña
+                    </h4>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Nota:</strong> La contraseña será generada automáticamente y se mostrará en un resumen.
+                        El usuario deberá cambiarla en su primer inicio de sesión.
+                    </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="form-actions mt-5 pt-4 border-top">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            <a href="{% url 'usuarios:lista_usuarios' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancelar
+                            </a>
+                            <button type="button" class="btn btn-outline-danger ms-2" id="btn-limpiar">
+                                <i class="fas fa-eraser me-2"></i>Limpiar Formulario
+                            </button>
+                        </div>
+                        
+                        <div>
+                            <button type="submit" class="btn btn-primary btn-lg" id="btn-submit">
+                                <i class="fas fa-user-plus me-2"></i>Crear Usuario
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer bg-light py-3">
+            <div class="row">
+                <div class="col-md-6">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>Creado: {% now "d/m/Y H:i" %}
+                    </small>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        <i class="fas fa-user-cog me-1"></i>Sistema de Gestión de Usuarios
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">
+                        <i class="fas fa-user-check me-2"></i>Confirmar Creación
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>¿Está seguro de que desea crear este usuario con la información proporcionada?</p>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Usuario:</strong> <span id="modal-username"></span><br>
+                        <strong>Rol:</strong> <span id="modal-role"></span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirm-submit">
+                        <i class="fas fa-check me-2"></i>Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE RESUMEN (NUEVO) -->
+    {% if mostrar_resumen and resumen_usuario %}
+    <div class="modal fade" id="resumenModal" tabindex="-1" aria-labelledby="resumenModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content modal-resumen">
+                <!-- Encabezado del Modal -->
+                <div class="modal-header text-white">
+                    <h3 class="modal-title" id="resumenModalLabel">
+                        <i class="fas fa-check-circle me-2"></i>Usuario Creado Exitosamente
+                    </h3>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                
+                <!-- Cuerpo del Modal -->
+                <div class="modal-body p-4">
+                    <!-- Alerta de éxito -->
+                    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center mb-4" role="alert">
+                        <i class="fas fa-check-circle fa-2x me-3"></i>
+                        <div class="flex-grow-1">
+                            <h5 class="alert-heading mb-1">¡Operación completada!</h5>
+                            <p class="mb-0">El usuario ha sido registrado correctamente en el sistema.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Información del usuario -->
+                    <div class="row mb-4">
+                        <!-- Datos del usuario -->
+                        <div class="col-md-6 mb-4 mb-md-0">
+                            <h5 class="mb-3 border-bottom pb-2">
+                                <i class="fas fa-user me-2"></i>Información del Usuario
+                            </h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <th><i class="fas fa-user me-2"></i>Nombre:</th>
+                                            <td>{{ resumen_usuario.nombre_completo }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th><i class="fas fa-at me-2"></i>Usuario:</th>
+                                            <td><code>{{ resumen_usuario.username }}</code></td>
+                                        </tr>
+                                        <tr>
+                                            <th><i class="fas fa-envelope me-2"></i>Email:</th>
+                                            <td>{{ resumen_usuario.email }}</td>
+                                        </tr>
+                                        <tr>
+                                            <th><i class="fas fa-user-tag me-2"></i>Rol:</th>
+                                            <td>
+                                                <span class="badge bg-primary badge-rol">
+                                                    {{ resumen_usuario.rol_display }}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th><i class="fas fa-calendar me-2"></i>Fecha:</th>
+                                            <td>{{ resumen_usuario.fecha_creacion }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <!-- Contraseña -->
+                        <div class="col-md-6">
+                            <h5 class="mb-3 border-bottom pb-2">
+                                <i class="fas fa-key me-2"></i>Contraseña Temporal
+                            </h5>
+                            <div class="alert alert-warning">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-exclamation-triangle mt-1 me-2"></i>
+                                    <div>
+                                        <p class="mb-2"><strong>Importante:</strong> Guarde esta contraseña en un lugar seguro</p>
+                                        
+                                        <div class="mb-3">
+                                            <div class="input-group">
+                                                <input type="text" 
+                                                       class="form-control password-display" 
+                                                       value="{{ resumen_usuario.password }}" 
+                                                       id="passwordGenerated"
+                                                       readonly>
+                                                <button class="btn btn-outline-primary" 
+                                                        type="button"
+                                                        onclick="copiarPassword()"
+                                                        data-bs-toggle="tooltip"
+                                                        title="Copiar contraseña">
+                                                    <i class="fas fa-copy"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted">Haga clic en el icono para copiar</small>
+                                        </div>
+                                        
+                                        <div class="alert alert-danger small mb-0">
+                                            <i class="fas fa-shield-alt me-1"></i>
+                                            <strong>Seguridad:</strong> Nunca comparta contraseñas por correo sin cifrar.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Instrucciones -->
+                    <div class="card border-info">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-list-ol me-2"></i>Próximos Pasos
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <span class="step-icon">1</span>
+                                        <div>
+                                            <h6 class="mb-1">Comunicar credenciales</h6>
+                                            <p class="small mb-0">Comparta usuario y contraseña por un canal seguro</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start mb-3">
+                                        <span class="step-icon">2</span>
+                                        <div>
+                                            <h6 class="mb-1">Primer acceso</h6>
+                                            <p class="small mb-0">El usuario debe iniciar sesión con estas credenciales</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-start mb-3">
+                                        <span class="step-icon">3</span>
+                                        <div>
+                                            <h6 class="mb-1">Cambio de contraseña</h6>
+                                            <p class="small mb-0">El sistema forzará el cambio en el primer inicio</p>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-start">
+                                        <span class="step-icon">4</span>
+                                        <div>
+                                            <h6 class="mb-1">Verificar acceso</h6>
+                                            <p class="small mb-0">Confirme que el usuario puede entrar al sistema</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Pie del Modal -->
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="copiarResumen()">
+                        <i class="fas fa-copy me-2"></i>Copiar Resumen
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-plus me-2"></i>Crear Otro Usuario
+                    </button>
+                    <a href="{% url 'usuarios:lista_usuarios' %}" class="btn btn-primary">
+                        <i class="fas fa-users me-2"></i>Ver Todos los Usuarios
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/crear_usuario.js' %}"></script>
+<script>
+// Esta parte va DESPUÉS de cargar jQuery y Bootstrap
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Si hay que mostrar el resumen, abrir el modal automáticamente
+    {% if mostrar_resumen and resumen_usuario %}
+    // Esperar un momento para asegurar que todo esté cargado
+    setTimeout(function() {
+        var resumenModal = new bootstrap.Modal(document.getElementById('resumenModal'));
+        resumenModal.show();
+        
+        // Configurar para que no se cierre haciendo clic fuera
+        document.getElementById('resumenModal').addEventListener('click', function(event) {
+            if (event.target === this) {
+                event.stopPropagation();
+            }
+        });
+    }, 300); // Pequeño delay para asegurar carga completa
+    {% endif %}
+    
+    // Inicializar tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+
+// Función para copiar la contraseña
+function copiarPassword() {
+    const passwordField = document.getElementById('passwordGenerated');
+    if (passwordField) {
+        // Seleccionar el texto
+        passwordField.select();
+        passwordField.setSelectionRange(0, 99999);
+        
+        // Copiar al portapapeles
+        navigator.clipboard.writeText(passwordField.value)
+            .then(() => {
+                // Mostrar notificación
+                showNotification('✓ Contraseña copiada al portapapeles', 'success');
+                
+                // Cambiar icono temporalmente
+                const btn = event.target.closest('button');
+                if (btn) {
+                    const icon = btn.querySelector('i');
+                    if (icon) {
+                        const originalClass = icon.className;
+                        icon.className = 'fas fa-check';
+                        setTimeout(() => {
+                            icon.className = originalClass;
+                        }, 2000);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error('Error al copiar: ', err);
+                showNotification('❌ Error al copiar la contraseña', 'danger');
+            });
+    }
+}
+
+// Función para copiar todo el resumen
+function copiarResumen() {
+    const contenido = `RESUMEN DE USUARIO CREADO
+=======================
+✅ Usuario creado exitosamente
+
+📋 INFORMACIÓN DEL USUARIO
+• Nombre: {{ resumen_usuario.nombre_completo }}
+• Usuario: {{ resumen_usuario.username }}
+• Email: {{ resumen_usuario.email }}
+• Rol: {{ resumen_usuario.rol_display }}
+• Fecha: {{ resumen_usuario.fecha_creacion }}
+
+🔐 CONTRASEÑA TEMPORAL
+{{ resumen_usuario.password }}
+
+📝 INSTRUCCIONES
+1. Compartir credenciales de forma segura
+2. Usuario inicia sesión con las credenciales
+3. Cambiar contraseña en primer inicio
+4. Verificar acceso al sistema
+
+⚠️ Nunca comparta contraseñas por correo sin cifrar.`;
+    
+    navigator.clipboard.writeText(contenido)
+        .then(() => {
+            showNotification('✓ Resumen copiado al portapapeles', 'success');
+        })
+        .catch(err => {
+            console.error('Error al copiar: ', err);
+            showNotification('❌ Error al copiar el resumen', 'danger');
+        });
+}
+
+// Función para mostrar notificaciones
+function showNotification(message, type = 'success') {
+    // Crear elemento de notificación
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type} alert-dismissible fade show position-fixed`;
+    notification.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    `;
+    
+    notification.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'} me-2"></i>
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto-eliminar después de 5 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 5000);
+}
+
+// Prevenir que se cierre el modal con ESC
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape' && document.querySelector('#resumenModal.show')) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+});
+</script>
+{% endblock %}
