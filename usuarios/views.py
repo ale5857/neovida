@@ -125,12 +125,28 @@ def editar_usuario(request, user_id):
     usuario = get_object_or_404(Usuario, id=user_id)
 
     if request.method == 'POST':
+
+        # 🚫 bloquear si intenta editarse
+        if usuario == request.user:
+            return JsonResponse({
+                'success': False,
+                'error': 'No puedes modificar tu propia cuenta desde aquí'
+            }, status=403)
+
         username = request.POST.get('username')
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        rol = request.POST.get('rol')
         password = request.POST.get('password')
 
         if username:
             usuario.username = username
-
+        if first_name:
+            usuario.first_name = first_name
+        if last_name:
+            usuario.last_name = last_name
+        if rol:
+            usuario.rol = rol
         if password:
             usuario.set_password(password)
 
@@ -139,10 +155,10 @@ def editar_usuario(request, user_id):
 
     return JsonResponse({
         'username': usuario.username,
+        'first_name': usuario.first_name,
+        'last_name': usuario.last_name,
         'rol': usuario.rol
     })
-
-
 # =====================================================
 # ELIMINAR USUARIO
 # =====================================================

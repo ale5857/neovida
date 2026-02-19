@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
 
     'usuarios',
     'pacientes.apps.PacientesConfig',
@@ -105,9 +106,14 @@ DATABASES = {
 LOGIN_REDIRECT_URL = 'panel_principal'
 LOGIN_URL = 'usuarios:login'
 LOGOUT_REDIRECT_URL = 'usuarios:login'
+
+# Enviar correos en consola (modo desarrollo)
+# ======================
+# CORREO REAL GMAIL
+# ======================
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-
+DEFAULT_FROM_EMAIL = 'neovida@localhost'
 
 # ======================
 # PASSWORD VALIDATION
@@ -126,7 +132,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'es'
 TIME_ZONE = 'America/Managua'
 USE_I18N = True
-USE_TZ = True
+USE_TZ = False
 
 
 # ======================
@@ -151,3 +157,5 @@ import os
 
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = '/static/'
+
+SITE_ID = 1
