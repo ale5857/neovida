@@ -6,8 +6,8 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('usuarios', '0003_alter_usuario_is_active'),
-    ]
+    ('usuarios', '0006_limpiar_emails_duplicados'),
+]
 
     operations = [
         migrations.AlterField(
