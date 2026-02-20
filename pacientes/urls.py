@@ -11,4 +11,6 @@ urlpatterns = [
     path('panel/', views.panel_paciente, name='panel_paciente'),
     path('logout/', views.logout_view, name='logout'),
 
+    path('api/pacientes/', views.api_pacientes, name='api_pacientes'),
+
 ]

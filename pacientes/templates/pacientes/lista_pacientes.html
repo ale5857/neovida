@@ -3,496 +3,277 @@
 
 {% block extra_css %}
 <style>
-    /* Estilos específicos para lista de pacientes */
-    .patients-container {
-        padding: 20px;
-        background: #f8f9fa;
-        min-height: calc(100vh - 100px);
-    }
-    
-    .header-actions {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-        flex-wrap: wrap;
-        gap: 15px;
-    }
-    
-    .search-filter {
-        display: flex;
-        gap: 15px;
-        flex-wrap: wrap;
-    }
-    
-    .search-box {
-        position: relative;
-        min-width: 300px;
-    }
-    
-    .search-box input {
-        padding-left: 40px;
-    }
-    
-    .search-box i {
-        position: absolute;
-        left: 12px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #6c757d;
-    }
-    
-    /* Card de paciente */
-    .patient-card {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        overflow: hidden;
-        margin-bottom: 20px;
-        border: 1px solid #e9ecef;
-    }
-    
-    .patient-card:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
-    }
-    
-    .patient-header {
-        padding: 20px;
-        border-bottom: 1px solid #e9ecef;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-    }
-    
-    .patient-info {
-        padding: 20px;
-    }
-    
-    .info-row {
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: 10px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #f1f3f5;
-    }
-    
-    .info-label {
-        font-weight: 600;
-        color: #495057;
-        flex: 1;
-    }
-    
-    .info-value {
-        flex: 2;
-        text-align: right;
-        color: #212529;
-    }
-    
-    /* Badges */
-    .risk-badge {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-    
-    .risk-high {
-        background: #ffeaea;
-        color: #dc3545;
-    }
-    
-    .risk-medium {
-        background: #fff3cd;
-        color: #856404;
-    }
-    
-    .risk-low {
-        background: #d4edda;
-        color: #155724;
-    }
-    
-    .id-badge {
-        background: #e9ecef;
-        color: #6c757d;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 12px;
-    }
-    
-    /* Botones de acción */
-    .action-buttons {
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        margin-top: 20px;
-        padding-top: 20px;
-        border-top: 1px solid #e9ecef;
-    }
-    
-    .btn-action {
-        flex: 1;
-        min-width: 100px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        padding: 10px 15px;
-        border-radius: 8px;
-        font-weight: 500;
-        transition: all 0.2s;
-    }
-    
-    /* Stats cards */
-    .stats-card {
-        background: white;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
-    }
-    
-    .stats-title {
-        font-size: 14px;
-        color: #6c757d;
-        margin-bottom: 5px;
-    }
-    
-    .stats-value {
-        font-size: 24px;
-        font-weight: 700;
-        color: #333;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .header-actions {
-            flex-direction: column;
-            align-items: stretch;
-        }
-        
-        .search-filter {
-            flex-direction: column;
-        }
-        
-        .search-box {
-            min-width: 100%;
-        }
-        
-        .patient-header {
-            padding: 15px;
-        }
-        
-        .patient-info {
-            padding: 15px;
-        }
-        
-        .info-row {
-            flex-direction: column;
-            gap: 5px;
-        }
-        
-        .info-label, .info-value {
-            text-align: left;
-            flex: none;
-        }
-        
-        .action-buttons {
-            flex-direction: column;
-        }
-        
-        .btn-action {
-            width: 100%;
-        }
-    }
-    
-    /* Grid responsive */
-    @media (min-width: 992px) {
-        .patients-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
-        }
-    }
-    
-    @media (min-width: 1200px) {
-        .patients-grid {
-            grid-template-columns: repeat(3, 1fr);
-        }
-    }
-    
-    /* Filtros */
-    .filter-tabs {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 20px;
-        flex-wrap: wrap;
-    }
-    
-    .filter-tab {
-        padding: 8px 20px;
-        background: white;
-        border: 1px solid #dee2e6;
-        border-radius: 20px;
-        cursor: pointer;
-        transition: all 0.2s;
-    }
-    
-    .filter-tab:hover,
-    .filter-tab.active {
-        background: #0d6efd;
-        color: white;
-        border-color: #0d6efd;
-    }
+.patients-container{padding:20px;background:#f8f9fa;min-height:calc(100vh - 100px);}
+.header-actions{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px;flex-wrap:wrap;gap:15px;}
+.search-filter{display:flex;gap:15px;flex-wrap:wrap;}
+.search-box{position:relative;min-width:300px;}
+.search-box input{padding-left:40px;}
+.search-box i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#6c757d;}
+
+/* ===== CARD CLINICA ===== */
+.patient-card{
+background:#fff;
+border-radius:18px;
+box-shadow:0 10px 25px rgba(0,0,0,.08);
+transition:.25s;
+overflow:hidden;
+border:none;
+position:relative;
+}
+
+.patient-card:hover{
+transform:translateY(-6px);
+box-shadow:0 18px 40px rgba(0,0,0,.15);
+}
+
+/* HEADER */
+.patient-header{
+padding:18px 20px;
+background:linear-gradient(135deg,#4f8cff,#6a5acd);
+color:white;
+display:flex;
+justify-content:space-between;
+align-items:flex-start;
+}
+
+.patient-name{
+font-weight:600;
+font-size:18px;
+margin-bottom:6px;
+letter-spacing:.2px;
+}
+
+/* BADGES */
+.patient-badges{
+display:flex;
+gap:8px;
+flex-wrap:wrap;
+}
+
+.badge-soft{
+background:rgba(255,255,255,.18);
+backdrop-filter:blur(5px);
+padding:5px 12px;
+border-radius:20px;
+font-size:12px;
+}
+
+/* BODY */
+.patient-info{
+padding:18px 20px;
+background:#f9fafc;
+}
+
+.info-row{
+display:flex;
+justify-content:space-between;
+padding:12px 0;
+border-bottom:1px dashed #e3e6ee;
+font-size:14px;
+}
+
+.info-row:last-child{border-bottom:none;}
+
+.info-label{
+color:#6b7280;
+font-weight:500;
+}
+
+.info-value{
+font-weight:600;
+color:#1f2937;
+}
+
+/* BOTON */
+.btn-expediente{
+margin-top:16px;
+width:100%;
+padding:12px;
+border-radius:12px;
+font-weight:600;
+background:linear-gradient(135deg,#2563eb,#1e40af);
+border:none;
+transition:.2s;
+}
+
+.btn-expediente:hover{
+transform:scale(1.02);
+box-shadow:0 8px 18px rgba(37,99,235,.35);
+}
+
+
+.risk-badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;text-transform:uppercase;}
+.risk-high{background:#ffeaea;color:#dc3545;}
+.risk-medium{background:#fff3cd;color:#856404;}
+.risk-low{background:#d4edda;color:#155724;}
+
+.action-buttons{display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;padding-top:20px;border-top:1px solid #e9ecef;}
+.btn-action{flex:1;min-width:100px;display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 15px;border-radius:8px;font-weight:500;}
+
+.filter-tabs{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;}
+.filter-tab{padding:8px 20px;background:white;border:1px solid #dee2e6;border-radius:20px;cursor:pointer;}
+.filter-tab.active,.filter-tab:hover{background:#0d6efd;color:white;border-color:#0d6efd;}
+
+@media (min-width:992px){.patients-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}}
+@media (min-width:1200px){.patients-grid{grid-template-columns:repeat(3,1fr);}}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="patients-container">
-    <!-- Header con título y búsqueda -->
-    <div class="header-actions">
-        <div>
-            <h2 class="mb-2">Lista de Pacientes</h2>
-            <p class="text-muted mb-0">Gestiona y visualiza todos los pacientes registrados</p>
-        </div>
-        
-        <div class="search-filter">
-            <div class="search-box">
-                <i class="fas fa-search"></i>
-                <input type="text" class="form-control" placeholder="Buscar paciente..." id="searchInput">
-            </div>
-            
-            <div class="dropdown">
-                <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
-                    <i class="fas fa-filter"></i> Filtrar
-                </button>
-                <ul class="dropdown-menu">
-                    <li><a class="dropdown-item" href="#">Todos</a></li>
-                    <li><a class="dropdown-item" href="#">Alto Riesgo</a></li>
-                    <li><a class="dropdown-item" href="#">Embarazo Activo</a></li>
-                    <li><a class="dropdown-item" href="#">Citas Pendientes</a></li>
-                </ul>
-            </div>
-            
-            <a href="{% url 'pacientes:agregar_paciente' %}" class="btn btn-primary">
-                <i class="fas fa-plus"></i> Nuevo Paciente
-            </a>
-        </div>
-    </div>
 
-    <!-- Filtros rápidos -->
-    <div class="filter-tabs">
-        <div class="filter-tab active">Todos ({{ pacientes|length }})</div>
-        <div class="filter-tab">Alto Riesgo</div>
-        <div class="filter-tab">Embarazo Activo</div>
-        <div class="filter-tab">Citas Hoy</div>
-    </div>
+<div class="header-actions">
+<div>
+<h2 class="mb-2">Lista de Pacientes</h2>
+<p class="text-muted mb-0">Gestiona y visualiza todos los pacientes registrados</p>
+</div>
 
-    <!-- Estadísticas rápidas -->
-    <div class="row mb-4">
-        <div class="col-md-3 col-sm-6">
-            <div class="stats-card">
-                <div class="stats-title">Total Pacientes</div>
-                <div class="stats-value">{{ pacientes|length }}</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stats-card">
-                <div class="stats-title">Alto Riesgo</div>
-                <div class="stats-value" style="color: #dc3545;">{{ pacientes_alto_riesgo }}</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stats-card">
-                <div class="stats-title">Embarazo Activo</div>
-                <div class="stats-value" style="color: #0d6efd;">{{ embarazos_activos }}</div>
-            </div>
-        </div>
-        <div class="col-md-3 col-sm-6">
-            <div class="stats-card">
-                <div class="stats-title">Citas Hoy</div>
-                <div class="stats-value" style="color: #198754;">{{ citas_hoy }}</div>
-            </div>
-        </div>
-    </div>
+<div class="search-filter">
+<div class="search-box">
+<i class="fas fa-search"></i>
+<input type="text" class="form-control" placeholder="Buscar paciente..." id="searchInput">
+</div>
 
-    <!-- Grid de pacientes -->
-    <div class="patients-grid" id="patientsGrid">
-        {% for paciente in pacientes %}
-        <div class="patient-card" data-name="{{ paciente.nombre|lower }}" data-risk="{{ paciente.riesgo|lower }}">
-            <div class="patient-header">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <h5 class="mb-1">{{ paciente.nombre }}</h5>
-                        <div class="d-flex align-items-center gap-2 mt-2">
-                            <span class="badge bg-light text-dark">
-                                <i class="fas fa-user"></i> {{ paciente.edad }} años
-                            </span>
-                            <span class="badge bg-light text-dark">
-                                <i class="fas fa-baby"></i> {{ paciente.numero_embarazos }} embarazo(s)
-                            </span>
-                        </div>
-                    </div>
-                    <div class="dropdown">
-                        <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit"></i> Editar</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-trash"></i> Eliminar</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-file-medical"></i> Expediente</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="fas fa-calendar-plus"></i> Agendar Cita</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="patient-info">
-                <!-- Información del paciente -->
-                <div class="info-row">
-                    <span class="info-label">Identificación:</span>
-                    <span class="info-value">
-                        {% if paciente.identificacion %}
-                            {{ paciente.identificacion }}
-                        {% else %}
-                            <span class="id-badge">Sin identificación</span>
-                        {% endif %}
-                    </span>
-                </div>
-                
-                <div class="info-row">
-                    <span class="info-label">Nivel de Riesgo:</span>
-                    <span class="info-value">
-                        {% if paciente.riesgo == 'Alto' %}
-                            <span class="risk-badge risk-high">Alto Riesgo</span>
-                        {% elif paciente.riesgo == 'Medio' %}
-                            <span class="risk-badge risk-medium">Riesgo Medio</span>
-                        {% else %}
-                            <span class="risk-badge risk-low">Bajo Riesgo</span>
-                        {% endif %}
-                    </span>
-                </div>
-                
-                <div class="info-row">
-                    <span class="info-label">Última Cita:</span>
-                    <span class="info-value">{{ paciente.ultima_cita|date:"d/m/Y"|default:"Sin citas" }}</span>
-                </div>
-                
-                <div class="info-row">
-                    <span class="info-label">Próxima Cita:</span>
-                    <span class="info-value">
-                        {% if paciente.proxima_cita %}
-                            <span class="text-primary">{{ paciente.proxima_cita|date:"d/m/Y H:i" }}</span>
-                        {% else %}
-                            <span class="text-muted">No programada</span>
-                        {% endif %}
-                    </span>
-                </div>
-                
-                <!-- Botones de acción -->
-                <div class="action-buttons">
-                    <a href="#" class="btn btn-outline-primary btn-action">
-                        <i class="fas fa-edit"></i> Editar
-                    </a>
-                 
-                    {% if error %}
-    <p>{{ error }}</p>
-{% else %}
-<a href="{% url 'expedientes:ver_expediente' paciente.id %}"
-   class="btn btn-primary">
-   <i class="fas fa-file-medical"></i> Ver expediente
+<a href="{% url 'pacientes:agregar_paciente' %}" class="btn btn-primary">
+<i class="fas fa-plus"></i> Nuevo Paciente
 </a>
-   <a href="{% url 'pacientes:borrar_paciente' paciente.id %}" class="btn btn-outline-danger btn-action" 
-                    onclick="return confirm('¿Eliminar a {{ paciente.nombre_completo }}? Esta acción es irreversible.')"><i 
-                    class="fas fa-trash"></i> Borrar
-                    </a>    
-{% endif %}                  
-                </div>
-            </div>
+</div>
+</div>
+
+<div class="filter-tabs">
+<div class="filter-tab active">Todos</div>
+<div class="filter-tab">Alto Riesgo</div>
+<div class="filter-tab">Embarazo Activo</div>
+<div class="filter-tab">Citas Hoy</div>
+</div>
+
+<div class="patients-grid" id="patientsGrid"></div>
+
+<div class="text-center py-4">
+<button class="btn btn-outline-primary" id="loadMoreBtn">Cargar más pacientes</button>
+</div>
+
+<script>
+let page=1,loading=false,hasNext=true,currentFilter="todos";
+const grid=document.getElementById("patientsGrid");
+const btn=document.getElementById("loadMoreBtn");
+const searchInput=document.getElementById("searchInput");
+const filterTabs=document.querySelectorAll(".filter-tab");
+
+function riskBadge(r){
+if(r==="Alto")return `<span class="risk-badge risk-high">Alto Riesgo</span>`;
+if(r==="Medio")return `<span class="risk-badge risk-medium">Riesgo Medio</span>`;
+return `<span class="risk-badge risk-low">Bajo Riesgo</span>`;
+}
+
+function crearCard(p){
+
+let enfermedadesHTML = p.enfermedades.length
+    ? `<span class="badge bg-danger-subtle text-danger">${p.enfermedades.join(", ")}</span>`
+    : `<span class="text-muted">Sin antecedentes de riesgo</span>`;
+
+return `
+<div class="patient-card">
+
+<div class="patient-header">
+    <div>
+        <div class="patient-name">${p.nombre}</div>
+
+        <div class="patient-badges">
+            <span class="badge-soft"><i class="fas fa-user"></i> ${p.edad} años</span>
+            ${riskBadge(p.riesgo)}
         </div>
-        {% empty %}
-        <div class="col-12">
-            <div class="text-center py-5" style="grid-column: 1 / -1;">
-                <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                <h4 class="text-muted">No hay pacientes registrados</h4>
-                <p class="text-muted">Comienza agregando tu primer paciente</p>
-                <a href="{% url 'pacientes:agregar_paciente' %}" class="btn btn-primary mt-2">
-                    <i class="fas fa-plus"></i> Agregar Paciente
+    </div>
+
+    <div class="dropdown">
+        <button class="btn btn-sm btn-light rounded-circle" type="button" data-bs-toggle="dropdown">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <ul class="dropdown-menu">
+            <li>
+                <a class="dropdown-item text-danger eliminar-paciente" data-id="${p.id}">
+                    <i class="fas fa-trash"></i> Eliminar
                 </a>
-            </div>
-        </div>
-        {% endfor %}
+            </li>
+        </ul>
     </div>
 </div>
 
-<!-- JavaScript para búsqueda y filtros -->
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Búsqueda en tiempo real
-    const searchInput = document.getElementById('searchInput');
-    const patientsGrid = document.getElementById('patientsGrid');
-    const patientCards = patientsGrid.querySelectorAll('.patient-card');
-    
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase();
-        
-        patientCards.forEach(card => {
-            const patientName = card.getAttribute('data-name');
-            if (patientName.includes(searchTerm)) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    });
-    
-    // Filtros por tabs
-    const filterTabs = document.querySelectorAll('.filter-tab');
-    filterTabs.forEach(tab => {
-        tab.addEventListener('click', function() {
-            // Remover clase active de todos
-            filterTabs.forEach(t => t.classList.remove('active'));
-            // Agregar clase active al clickeado
-            this.classList.add('active');
-            
-            const filterType = this.textContent.toLowerCase();
-            
-            patientCards.forEach(card => {
-                if (filterType.includes('todos')) {
-                    card.style.display = 'block';
-                } else if (filterType.includes('alto')) {
-                    const risk = card.getAttribute('data-risk');
-                    if (risk.includes('alto')) {
-                        card.style.display = 'block';
-                    } else {
-                        card.style.display = 'none';
-                    }
-                } else {
-                    card.style.display = 'block';
-                }
-            });
-        });
-    });
-    
-    // Ordenar por riesgo (ejemplo)
-    function sortByRisk() {
-        const container = patientsGrid;
-        const cards = Array.from(container.querySelectorAll('.patient-card'));
-        
-        cards.sort((a, b) => {
-            const riskA = a.getAttribute('data-risk');
-            const riskB = b.getAttribute('data-risk');
-            
-            // Prioridad: alto > medio > bajo
-            const priority = { 'alto': 1, 'medio': 2, 'bajo': 3 };
-            return (priority[riskA] || 4) - (priority[riskB] || 4);
-        });
-        
-        // Reordenar en el DOM
-        cards.forEach(card => container.appendChild(card));
-    }
+<div class="patient-info">
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-phone"></i> Teléfono</span>
+        <span class="info-value">${p.telefono || "No registrado"}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-map-marker-alt"></i> Dirección</span>
+        <span class="info-value">${p.direccion}, ${p.localidad}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-heart"></i> Estado civil</span>
+        <span class="info-value">${p.estado_civil}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-graduation-cap"></i> Escolaridad</span>
+        <span class="info-value">${p.escolaridad}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-baby"></i> Historial obstétrico</span>
+        <span class="info-value">G:${p.gestas}  P:${p.partos}  A:${p.abortos}</span>
+    </div>
+
+    <div class="info-row">
+        <span class="info-label"><i class="fas fa-notes-medical"></i> Riesgos clínicos</span>
+        <span class="info-value">${enfermedadesHTML}</span>
+    </div>
+
+    <a href="/expedientes/ver/${p.id}/" class="btn btn-primary btn-expediente">
+        <i class="fas fa-file-medical"></i> Abrir expediente clínico
+    </a>
+
+</div>
+</div>`;
+}
+
+async function cargarPacientes(reset=false){
+if(loading)return;
+loading=true;
+if(reset){page=1;hasNext=true;grid.innerHTML="";btn.style.display="block";}
+try{
+const res=await fetch(`/pacientes/api/pacientes/?page=${page}&search=${searchInput.value}&filter=${currentFilter}`);
+const data=await res.json();
+data.pacientes.forEach(p=>grid.insertAdjacentHTML("beforeend",crearCard(p)));
+hasNext=data.has_next;page++;
+if(!hasNext)btn.style.display="none";
+}catch(e){console.error(e);}
+loading=false;
+}
+
+btn.addEventListener("click",()=>cargarPacientes());
+
+let debounce;
+searchInput.addEventListener("input",()=>{
+clearTimeout(debounce);
+debounce=setTimeout(()=>cargarPacientes(true),400);
 });
+
+filterTabs.forEach(tab=>{
+tab.addEventListener("click",()=>{
+filterTabs.forEach(t=>t.classList.remove("active"));
+tab.classList.add("active");
+currentFilter=tab.textContent.toLowerCase().includes("alto")?"alto":
+tab.textContent.toLowerCase().includes("embarazo")?"embarazo":
+tab.textContent.toLowerCase().includes("citas")?"citas":"todos";
+cargarPacientes(true);
+});
+});
+
+cargarPacientes();
 </script>
+
+</div>
 {% endblock %}

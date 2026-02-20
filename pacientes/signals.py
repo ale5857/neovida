@@ -14,19 +14,33 @@ def generar_password():
 @receiver(post_save, sender=Paciente)
 def crear_usuario_paciente(sender, instance, created, **kwargs):
     if created and instance.usuario is None:
-        username = slugify(f"{instance.nombre}.{instance.apellido}")[:20]
+
+        base_username = slugify(f"{instance.nombre}.{instance.apellido}")[:20]
+        username = base_username
+        contador = 1
+
+        # asegurar username único
+        while Usuario.objects.filter(username=username).exists():
+            username = f"{base_username}{contador}"[:20]
+            contador += 1
+
         password = generar_password()
 
-        usuario = Usuario.objects.create_user(
+        # email único real
+        email = f"{username}@paciente.local"
+
+        # 🔥 crear usuario manualmente (no create_user)
+        usuario = Usuario(
             username=username,
-            password=password,
+            email=email,
             rol='PACIENTE'
         )
 
-        instance.usuario = usuario
-        instance.save()
+        usuario.set_password(password)
+        usuario.save()
 
-        # SOLO PARA DESARROLLO / PRUEBAS
+        instance.usuario = usuario
+        instance.save(update_fields=["usuario"])
         print("Usuario creado automáticamente")
         print("Username:", username)
         print("Password:", password)

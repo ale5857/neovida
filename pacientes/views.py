@@ -114,15 +114,121 @@ def agregar_paciente(request):
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import Paciente
+from django.http import JsonResponse
+from django.db.models import Q
 
 @login_required
 def lista_pacientes(request):
-    pacientes = Paciente.objects.all().order_by('-creado_en')
-    return render(request, 'pacientes/lista_pacientes.html', {
-        'pacientes': pacientes
+    # Solo renderiza la página, NO carga pacientes
+    return render(request, 'pacientes/lista_pacientes.html')
+
+
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import Paciente
+
+
+def calcular_riesgo(paciente):
+    """
+    Clasificación simple tipo MINSA
+    """
+    try:
+        ap = paciente.antecedentes_personales
+
+        if ap.diabetes or ap.hipertension or ap.preeclampsia or ap.eclampsia:
+            return "Alto"
+
+        if ap.asma or ap.cardiopatia or ap.nefropatia:
+            return "Medio"
+
+    except:
+        pass
+
+    return "Bajo"
+
+
+from django.http import JsonResponse
+from django.core.paginator import Paginator
+from django.db.models import Q
+from .models import Paciente
+
+
+def api_pacientes(request):
+
+    search = request.GET.get("search", "")
+    filtro = request.GET.get("filter", "todos")
+    page = request.GET.get("page", 1)
+
+    pacientes = Paciente.objects.all().order_by("-id")
+
+    # 🔎 BUSQUEDA
+    if search:
+        pacientes = pacientes.filter(
+            Q(nombre__icontains=search) |
+            Q(apellido__icontains=search) |
+            Q(telefono__icontains=search)
+        )
+
+    paginator = Paginator(pacientes, 6)
+    page_obj = paginator.get_page(page)
+
+    data = []
+
+    for p in page_obj:
+
+        # ================= RIESGO =================
+        riesgo = calcular_riesgo(p)
+
+        if filtro == "alto" and riesgo != "Alto":
+            continue
+
+        # ============ ANTECEDENTES OBSTETRICOS ============
+        try:
+            ao = p.antecedentes_obstetricos
+            gestas = ao.gestas
+            partos = ao.partos
+            abortos = ao.abortos
+        except:
+            gestas = 0
+            partos = 0
+            abortos = 0
+
+        # ============ ENFERMEDADES IMPORTANTES ============
+        enfermedades = []
+        try:
+            ap = p.antecedentes_personales
+            if ap.diabetes: enfermedades.append("Diabetes")
+            if ap.hipertension: enfermedades.append("Hipertensión")
+            if ap.preeclampsia: enfermedades.append("Preeclampsia")
+            if ap.eclampsia: enfermedades.append("Eclampsia")
+            if ap.cardiopatia: enfermedades.append("Cardiopatía")
+            if ap.nefropatia: enfermedades.append("Nefropatía")
+        except:
+            pass
+
+        # ============ RESPUESTA ============
+        data.append({
+            "id": p.id,
+            "nombre": f"{p.nombre} {p.apellido}",
+            "edad": p.edad,
+            "telefono": p.telefono,
+            "direccion": p.domicilio,
+            "localidad": p.localidad,
+            "estado_civil": p.estado_civil,
+            "escolaridad": p.escolaridad,
+            "gestas": gestas,
+            "partos": partos,
+            "abortos": abortos,
+            "riesgo": riesgo,
+            "enfermedades": enfermedades,
+            "embarazo_activo": True
+        })
+
+    return JsonResponse({
+        "pacientes": data,
+        "has_next": page_obj.has_next()
     })
-
-
 
 @login_required
 def borrar_paciente(request, paciente_id):
