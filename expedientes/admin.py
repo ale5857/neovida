@@ -11,14 +11,21 @@ class ExpedienteAdmin(admin.ModelAdmin):
 
 @admin.register(Embarazo)
 class EmbarazoAdmin(admin.ModelAdmin):
+
     list_display = (
         'id',
         'expediente',
-        'semanas_gestacion',
+        'mostrar_semanas',
         'activo',
         'creado_en'
     )
+
     list_filter = ('activo',)
+
+    def mostrar_semanas(self, obj):
+        return obj.semanas_gestacion
+
+    mostrar_semanas.short_description = "Semanas"
 
 
 @admin.register(Vacuna)

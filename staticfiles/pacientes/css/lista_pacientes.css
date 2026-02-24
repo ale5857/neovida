@@ -1,0 +1,119 @@
+body {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+    font-family: Arial, sans-serif;
+}
+h2 {
+    color: #d63384;
+    font-family: Arial, sans-serif;
+    text-align: center;
+    margin-top: 30px;
+    letter-spacing: 1px;
+    animation: fadeInDown 1s;
+}
+@keyframes fadeInDown {
+    from { opacity: 0; transform: translateY(-30px);}
+    to { opacity: 1; transform: translateY(0);}
+}
+.table-container {
+    width: 95%;
+    margin: 40px auto;
+    padding: 24px;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 6px 32px rgba(214,51,132,0.10);
+    border: 2px solid #d63384;
+    animation: fadeIn 1.2s;
+}
+table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(214,51,132,0.06);
+    border: 1.5px solid #d63384;
+    animation: fadeIn 1.2s;
+}
+thead tr {
+    background-color: #f8f0fc;
+    color: #d63384;
+    text-align: left;
+    font-size: 1.1em;
+}
+th, td {
+    padding: 16px 14px;
+    border-bottom: 1px solid #e9ecef;
+    transition: background 0.3s;
+}
+th {
+    border-right: 1px solid #f3d9fa;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+th:last-child, td:last-child {
+    border-right: none;
+}
+tbody tr {
+    transition: background 0.3s;
+}
+tbody tr:hover {
+    background: #fff0f6;
+    animation: rowHover 0.4s;
+}
+@keyframes rowHover {
+    from { background: #fff;}
+    to { background: #fff0f6;}
+}
+a.btn {
+    background-color: #ff85a2;
+    color: white;
+    padding: 8px 18px;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-right: 8px;
+    font-weight: bold;
+    box-shadow: 0 2px 8px rgba(255,133,162,0.12);
+    transition: background 0.2s, transform 0.2s;
+    display: inline-block;
+    animation: btnFadeIn 0.8s;
+    border: none;
+    outline: none;
+}
+a.btn:last-child {
+    background-color: #ff5c5c;
+    margin-right: 0;
+}
+a.btn:hover {
+    background-color: #d63384;
+    transform: scale(1.07);
+}
+@keyframes btnFadeIn {
+    from { opacity: 0; transform: scale(0.9);}
+    to { opacity: 1; transform: scale(1);}
+}
+.empty-row td {
+    text-align: center;
+    padding: 20px;
+    color: #d63384;
+    font-size: 1.1em;
+    background: #fff0f6;
+    animation: fadeIn 1s;
+    border-bottom: none;
+}
+/* Responsive */
+@media (max-width: 900px) {
+    .table-container {
+        padding: 8px;
+    }
+    table, thead, tbody, th, td, tr {
+        font-size: 0.95em;
+    }
+    th, td {
+        padding: 10px 6px;
+    }
+}
+@keyframes fadeIn {
+    from { opacity: 0;}
+    to { opacity: 1;}
+}

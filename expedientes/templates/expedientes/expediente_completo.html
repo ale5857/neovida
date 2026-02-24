@@ -1,186 +1,132 @@
-{% extends "base.html" %}
+{% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Expediente Clínico | NeoVida{% endblock %}
-
-{% block extra_css %}
-<style>
-    .section-card {
-        border-radius: 12px;
-        margin-bottom: 20px;
-    }
-    .section-title {
-        font-weight: 600;
-        margin-bottom: 15px;
-    }
-    .info-label {
-        font-weight: 600;
-        color: #555;
-    }
-</style>
-{% endblock %}
+{% block title %}Expediente Completo - {{ paciente.nombre_completo }}{% endblock %}
 
 {% block content %}
+<div class="container py-4">
 
-<div class="container-fluid">
+    <h3 class="mb-4">
+        <i class="fas fa-file-medical-alt"></i>
+        Historial Obstétrico Completo
+    </h3>
 
-    <!-- ================= HEADER ================= -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h3 class="mb-1">
-                <i class="fas fa-file-medical text-primary"></i>
-                Expediente Clínico
-            </h3>
-            <p class="text-muted mb-0">
-                Paciente: <strong>{{ paciente.nombre }} {{ paciente.apellido }}</strong>
-            </p>
-        </div>
-
-        <div>
-            {% if request.user.rol == 'DOCTOR' %}
-            <a href="#" class="btn btn-success">
-                <i class="fas fa-stethoscope"></i> Nueva Consulta
-            </a>
-            {% endif %}
-        </div>
+    <div class="mb-4">
+        <strong>Paciente:</strong> {{ paciente.nombre_completo }} <br>
+        <strong>Edad:</strong> {{ paciente.edad }} años <br>
+        <strong>Expediente:</strong> #{{ expediente.id }}
     </div>
 
-    <!-- ================= DATOS DEL PACIENTE ================= -->
-    <div class="card section-card shadow-sm">
-        <div class="card-body">
-            <h5 class="section-title">
-                <i class="fas fa-user"></i> Datos de la Paciente
-            </h5>
+    {% for embarazo in embarazos %}
+    <div class="card mb-4 shadow-sm">
 
-            <div class="row">
-                <div class="col-md-4">
-                    <p><span class="info-label">Edad:</span> {{ paciente.edad }} años</p>
+        <div class="card-header
+            {% if embarazo.activo %}bg-success text-white{% else %}bg-secondary text-white{% endif %}">
+
+            <strong>
+                Embarazo #{{ forloop.counter }}
+            </strong>
+
+            {% if embarazo.activo %}
+                <span class="badge bg-light text-dark ms-2">ACTIVO</span>
+            {% else %}
+                <span class="badge bg-light text-dark ms-2">FINALIZADO</span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <strong>FUR:</strong><br>
+                    {{ embarazo.fecha_ultima_regla }}
                 </div>
-                <div class="col-md-4">
-                    <p><span class="info-label">Identificación:</span>
-                        {{ paciente.numero_identificacion|default:"No registrada" }}
-                    </p>
+
+                <div class="col-md-3">
+                    <strong>FPP:</strong><br>
+                    {{ embarazo.fecha_probable_parto|date:"d/m/Y" }}
                 </div>
-                <div class="col-md-4">
-                    <p><span class="info-label">Teléfono:</span>
-                        {{ paciente.telefono|default:"No registrado" }}
-                    </p>
+
+                <div class="col-md-3">
+                    <strong>IMC Inicial:</strong><br>
+                    {{ embarazo.imc_inicial }}
+                </div>
+
+                <div class="col-md-3">
+                    <strong>Planeado:</strong><br>
+                    {{ embarazo.embarazo_planeado|yesno:"Sí,No" }}
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ================= EMBARAZO ACTIVO ================= -->
-    <div class="card section-card shadow-sm">
-        <div class="card-body">
-            <h5 class="section-title">
-                <i class="fas fa-baby text-primary"></i> Embarazo Activo
-            </h5>
-
-            {% if embarazo %}
-            <div class="row">
-                <div class="col-md-4">
-                    <p><span class="info-label">Semanas de gestación:</span> {{ embarazo.semanas_gestacion }}</p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="info-label">Riesgo:</span>
-                        <span class="badge bg-warning text-dark">{{ embarazo.riesgo }}</span>
-                    </p>
-                </div>
-                <div class="col-md-4">
-                    <p><span class="info-label">FUR:</span> {{ embarazo.fur|date:"d/m/Y" }}</p>
-                </div>
-            </div>
-            {% else %}
-            <p class="text-muted">No hay embarazo activo registrado.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ================= CONSULTAS ================= -->
-    <div class="card section-card shadow-sm">
-        <div class="card-body">
-            <h5 class="section-title">
-                <i class="fas fa-notes-medical"></i> Consultas Médicas
-            </h5>
-
-            {% if consultas %}
-            <table class="table table-sm table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Fecha</th>
-                        <th>Motivo</th>
-                        <th>Diagnóstico</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for consulta in consultas %}
-                    <tr>
-                        <td>{{ consulta.fecha|date:"d/m/Y" }}</td>
-                        <td>{{ consulta.motivo }}</td>
-                        <td>{{ consulta.diagnostico }}</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="text-muted">No hay consultas registradas.</p>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- ================= LABORATORIOS ================= -->
-    <div class="card section-card shadow-sm">
-        <div class="card-body">
-            <h5 class="section-title">
-                <i class="fas fa-vials"></i> Exámenes de Laboratorio
-            </h5>
-
-            {% if laboratorios %}
-            <ul class="list-group list-group-flush">
-                {% for lab in laboratorios %}
+            <!-- CONSULTAS -->
+            <h6 class="mt-3"><i class="fas fa-stethoscope"></i> Consultas</h6>
+            <ul class="list-group mb-3">
+                {% for consulta in embarazo.consultas_prenatales.all %}
                 <li class="list-group-item">
-                    <strong>{{ lab.tipo }}</strong> —
-                    {{ lab.fecha|date:"d/m/Y" }}
+                    {{ consulta.fecha_consulta|date:"d/m/Y" }}
+                    — SG {{ consulta.semana_gestacion }}
+                    — {{ consulta.peso_madre }} kg
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">
+                    No hay consultas registradas
                 </li>
                 {% endfor %}
             </ul>
-            {% else %}
-            <p class="text-muted">No hay exámenes registrados.</p>
-            {% endif %}
-        </div>
-    </div>
 
-    <!-- ================= ULTRASONIDOS ================= -->
-    <div class="card section-card shadow-sm">
-        <div class="card-body">
-            <h5 class="section-title">
-                <i class="fas fa-wave-square"></i> Ultrasonidos
-            </h5>
-
-            {% if ultrasonidos %}
-            <div class="row">
-                {% for u in ultrasonidos %}
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <div class="card-body">
-                            <p><strong>Fecha:</strong> {{ u.fecha|date:"d/m/Y" }}</p>
-                            <p><strong>Semanas:</strong> {{ u.semanas_gestacion }}</p>
-
-                            {% if u.imagen %}
-                            <img src="{{ u.imagen.url }}" class="img-fluid rounded">
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
+            <!-- LABORATORIOS -->
+            <h6><i class="fas fa-vials"></i> Laboratorios</h6>
+            <ul class="list-group mb-3">
+                {% for lab in embarazo.laboratorios.all %}
+                <li class="list-group-item">
+                    {{ lab.fecha }} —
+                    Hb &lt;20s: {{ lab.hb_menor_20_sem|default:"-" }}
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">
+                    No hay laboratorios
+                </li>
                 {% endfor %}
-            </div>
-            {% else %}
-            <p class="text-muted">No hay ultrasonidos registrados.</p>
-            {% endif %}
+            </ul>
+
+            <!-- VACUNAS -->
+            <h6><i class="fas fa-syringe"></i> Vacunas</h6>
+            <ul class="list-group mb-3">
+                {% for vacuna in embarazo.vacunas.all %}
+                <li class="list-group-item">
+                    {{ vacuna.nombre }} —
+                    {{ vacuna.fecha_aplicacion }}
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">
+                    No hay vacunas
+                </li>
+                {% endfor %}
+            </ul>
+
+            <!-- ULTRASONIDOS -->
+            <h6><i class="fas fa-wave-square"></i> Ultrasonidos</h6>
+            <ul class="list-group">
+                {% for usg in embarazo.ultrasonidos.all %}
+                <li class="list-group-item">
+                    {{ usg.fecha }} —
+                    {{ usg.semanas_gestacion }} semanas
+                </li>
+                {% empty %}
+                <li class="list-group-item text-muted">
+                    No hay ultrasonidos
+                </li>
+                {% endfor %}
+            </ul>
+
         </div>
     </div>
+    {% endfor %}
+
+    <a href="{% url 'expedientes:ver_expediente' paciente.id %}"
+       class="btn btn-secondary mt-3">
+        Volver al expediente
+    </a>
 
 </div>
-
 {% endblock %}

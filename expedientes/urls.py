@@ -9,7 +9,11 @@ urlpatterns = [
     path(
     'consulta/crear/<int:expediente_id>/',
     views.crear_consulta_prenatal,
-    name='crear_consulta_prenatal'
-),
+    name='crear_consulta_prenatal'),
+
+    path('embarazo/finalizar/<int:embarazo_id>/', views.finalizar_embarazo, name='finalizar_embarazo'),
+    path('embarazo/nuevo/<int:expediente_id>/', views.nuevo_embarazo, name='nuevo_embarazo'),
+
+
 
 ]

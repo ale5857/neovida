@@ -1,148 +1,640 @@
+
 {% extends "dashboard/dashboard_base.html" %}
 
-{% block dashboard_title %}Panel Administrador - Resumen General{% endblock %}
+{% load static %}
+{% load safe_urls %}
+
+{% block dashboard_title %}Panel de Control Prenatal | Administración{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --primary: #2b5c8a;
+        --primary-light: #e8f0fe;
+        --secondary: #43b0b0;
+        --success: #2e7d5e;
+        --warning: #e6a057;
+        --danger: #c44545;
+        --info: #5d9b9b;
+        --dark: #2c3e50;
+        --gray-bg: #f8fafc;
+    }
+
+    body { background-color: var(--gray-bg); }
+
+    /* Header mejorado */
+    .clinic-header {
+        background: linear-gradient(135deg, #fff 0%, #f9fcff 100%);
+        padding: 1.8rem 2rem;
+        border-radius: 24px;
+        box-shadow: 0 8px 30px rgba(0,20,50,0.08);
+        border: 1px solid rgba(43, 92, 138, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .header-icon {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--primary), #1e3c5a);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 28px;
+        box-shadow: 0 10px 20px rgba(43, 92, 138, 0.3);
+    }
+
+    .status-badge {
+        background: rgba(46, 125, 94, 0.1);
+        color: var(--success);
+        padding: 0.5rem 1.2rem;
+        border-radius: 40px;
+        font-weight: 500;
+        border: 1px solid rgba(46, 125, 94, 0.2);
+    }
+
+    /* Tarjetas de estadísticas mejoradas */
+    .stat-card {
+        background: white;
+        padding: 1.8rem;
+        border-radius: 24px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.03);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 20px 40px rgba(43, 92, 138, 0.15);
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+    }
+
+    .stat-icon-wrapper {
+        width: 70px;
+        height: 70px;
+        background: var(--primary-light);
+        border-radius: 18px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        font-size: 32px;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--dark);
+        line-height: 1.2;
+    }
+
+    .stat-title {
+        color: #64748b;
+        font-weight: 500;
+        font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Tarjetas de alerta médica */
+    .alert-card {
+        background: white;
+        border-radius: 24px;
+        padding: 1.8rem;
+        border-left: 4px solid;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        transition: all 0.3s ease;
+    }
+
+    .alert-card.danger { border-left-color: var(--danger); }
+    .alert-card.warning { border-left-color: var(--warning); }
+    .alert-card.success { border-left-color: var(--success); }
+    .alert-card.info { border-left-color: var(--info); }
+
+    .alert-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-right: 1rem;
+    }
+
+    .alert-icon.danger { background: rgba(196, 69, 69, 0.1); color: var(--danger); }
+    .alert-icon.warning { background: rgba(230, 160, 87, 0.1); color: var(--warning); }
+    .alert-icon.success { background: rgba(46, 125, 94, 0.1); color: var(--success); }
+    .alert-icon.info { background: rgba(93, 155, 155, 0.1); color: var(--info); }
+
+    .alert-number {
+        font-size: 2.2rem;
+        font-weight: 700;
+        color: var(--dark);
+        line-height: 1;
+    }
+
+    /* Gráfico mejorado */
+    .chart-container {
+        background: white;
+        border-radius: 24px;
+        padding: 1.8rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    }
+
+    .chart-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px dashed #e9ecef;
+    }
+
+    .chart-title i {
+        width: 40px;
+        height: 40px;
+        background: var(--primary-light);
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--primary);
+        margin-right: 1rem;
+    }
+
+    /* Acciones rápidas */
+    .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .action-btn {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 20px;
+        padding: 1.5rem 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        color: var(--dark);
+        text-decoration: none;
+    }
+
+    .action-btn:hover {
+        background: var(--primary);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 15px 30px rgba(43, 92, 138, 0.3);
+        border-color: var(--primary);
+    }
+
+    .action-btn i {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+
+    .action-btn span {
+        font-weight: 500;
+        font-size: 0.95rem;
+    }
+
+    /* Timeline de actividad */
+    .activity-timeline {
+        background: white;
+        border-radius: 24px;
+        padding: 1.8rem;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        padding: 1rem 0;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .timeline-item:last-child { border-bottom: none; }
+
+    .timeline-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        font-size: 1.2rem;
+    }
+
+    .timeline-dot.patient { background: #e3f2fd; color: #1976d2; }
+    .timeline-dot.consult { background: #e8f5e9; color: #2e7d32; }
+    .timeline-dot.record { background: #fff3e0; color: #f57c00; }
+    .timeline-dot.alert { background: #ffebee; color: #c62828; }
+
+    .timeline-content {
+        flex: 1;
+    }
+
+    .timeline-content h6 {
+        margin: 0;
+        font-weight: 600;
+        color: var(--dark);
+    }
+
+    .timeline-content small {
+        color: #94a3b8;
+    }
+
+    .timeline-time {
+        color: #94a3b8;
+        font-size: 0.85rem;
+    }
+
+    /* Indicadores prenatales */
+    .prenatal-indicator {
+        background: white;
+        border-radius: 20px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+        border: 1px solid rgba(43, 92, 138, 0.1);
+    }
+
+    .progress-prenatal {
+        height: 8px;
+        border-radius: 10px;
+        background: #e9ecef;
+        margin: 0.5rem 0;
+    }
+
+    .progress-prenatal .progress-bar {
+        background: linear-gradient(90deg, var(--primary), var(--secondary));
+        border-radius: 10px;
+    }
+</style>
+{% endblock %}
 
 {% block dashboard_content %}
 
-<!-- =======================
-RESÚMENES PRINCIPALES
-======================= -->
-<div class="row mb-4">
-
-    <!-- Usuarios -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-start border-primary border-4 shadow-sm h-100 hover-card">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-bold text-primary text-uppercase small">Usuarios</div>
-                    <div class="h4 fw-bold">{{ total_usuarios }}</div>
+<!-- ================= HEADER MEJORADO ================= -->
+<div class="clinic-header">
+    <div class="row align-items-center">
+        <div class="col-auto">
+            <div class="header-icon">
+                <i class="fas fa-fetal-monitor"></i>
+            </div>
+        </div>
+        <div class="col">
+            <h2 class="fw-bold mb-1" style="color: var(--dark);">
+                Centro de Control Prenatal
+            </h2>
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted">
+                    <i class="fas fa-user-circle me-2"></i>
+                    {{ request.user.get_full_name }}
+                </span>
+                <span class="status-badge">
+                    <i class="fas fa-shield-alt me-2"></i>Administrador
+                </span>
+            </div>
+        </div>
+        <div class="col-auto">
+            <div class="text-end">
+                <div class="fw-semibold" style="color: var(--primary);">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    {{ now|date:"l d F Y" }}
                 </div>
-                <i class="fas fa-users fa-2x text-primary"></i>
+                <div class="mt-2">
+                    <span class="badge bg-light text-dark px-3 py-2">
+                        <i class="fas fa-clock text-primary me-2"></i>
+                        {{ now|time:"h:i A" }}
+                    </span>
+                </div>
             </div>
         </div>
     </div>
-
-    <!-- Doctores -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-start border-success border-4 shadow-sm h-100 hover-card">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-bold text-success text-uppercase small">Doctores</div>
-                    <div class="h4 fw-bold">{{ total_doctores }}</div>
-                </div>
-                <i class="fas fa-user-md fa-2x text-success"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Enfermeras -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-start border-warning border-4 shadow-sm h-100 hover-card">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-bold text-warning text-uppercase small">Enfermeras</div>
-                    <div class="h4 fw-bold">{{ total_enfermeras }}</div>
-                </div>
-                <i class="fas fa-user-nurse fa-2x text-warning"></i>
-            </div>
-        </div>
-    </div>
-
-    <!-- Pacientes -->
-    <div class="col-xl-3 col-md-6 mb-4">
-        <div class="card border-start border-info border-4 shadow-sm h-100 hover-card">
-            <div class="card-body d-flex justify-content-between align-items-center">
-                <div>
-                    <div class="fw-bold text-info text-uppercase small">Pacientes</div>
-                    <div class="h4 fw-bold">{{ total_pacientes }}</div>
-                </div>
-                <i class="fas fa-baby fa-2x text-info"></i>
-            </div>
-        </div>
-    </div>
-
 </div>
 
-<!-- =======================
-ALERTAS + ESTADO
-======================= -->
-<div class="row mb-4">
-
-    <!-- Alertas -->
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-danger text-white">
-                <i class="fas fa-exclamation-triangle me-2"></i> Alertas del sistema
+<!-- ================= INDICADORES PRINCIPALES ================= -->
+<div class="row g-4 mb-4">
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <div class="stat-title mb-2">
+                    <i class="fas fa-users me-2" style="color: var(--primary);"></i>Total Usuarios
+                </div>
+                <div class="stat-number">{{ total_usuarios }}</div>
+                <small class="text-success">
+                    <i class="fas fa-arrow-up me-1"></i>+12% este mes
+                </small>
             </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item d-flex justify-content-between">
-                    Embarazos alto riesgo
-                    <span class="badge bg-danger">{{ embarazos_riesgo|default:0 }}</span>
-                </li>
-                <li class="list-group-item d-flex justify-content-between">
-                    Citas atrasadas
-                    <span class="badge bg-warning">{{ citas_atrasadas|default:0 }}</span>
-                </li>
-            </ul>
-        </div>
-    </div>
-
-    <!-- Estado del sistema -->
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-success text-white">
-                <i class="fas fa-server me-2"></i> Estado del sistema
-            </div>
-            <div class="card-body">
-                <p>Base de datos: <span class="text-success fw-bold">Conectada</span></p>
-                <p>Usuarios activos: {{ total_usuarios }}</p>
-                <p class="text-muted small">Actualizado hoy</p>
+            <div class="stat-icon-wrapper">
+                <i class="fas fa-users"></i>
             </div>
         </div>
     </div>
 
-    <!-- Acciones rápidas -->
-    <div class="col-md-4 mb-4">
-        <div class="card shadow-sm h-100">
-            <div class="card-header bg-primary text-white">
-                <i class="fas fa-bolt me-2"></i> Acciones rápidas
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <div class="stat-title mb-2">
+                    <i class="fas fa-user-md me-2" style="color: #16a34a;"></i>Doctores
+                </div>
+                <div class="stat-number">{{ total_doctores }}</div>
+                <small class="text-success">
+                    <i class="fas fa-check-circle me-1"></i>Activos
+                </small>
             </div>
-            <div class="card-body d-grid gap-2">
-                <a href="{% url 'usuarios:crear_usuario' %}" class="btn btn-primary">
-                    <i class="fas fa-user-plus me-2"></i> Crear usuario
-                </a>
-                <a href="{% url 'pacientes:agregar_paciente' %}" class="btn btn-success">
-                    <i class="fas fa-baby me-2"></i> Registrar paciente
-                </a>
-                <a href="{% url 'usuarios:lista_usuarios' %}" class="btn btn-outline-secondary">
-                    <i class="fas fa-users me-2"></i> Ver usuarios
-                </a>
+            <div class="stat-icon-wrapper" style="background: rgba(22, 163, 74, 0.1); color: #16a34a;">
+                <i class="fas fa-user-md"></i>
             </div>
         </div>
     </div>
 
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <div class="stat-title mb-2">
+                    <i class="fas fa-user-nurse me-2" style="color: #f59e0b;"></i>Enfermeras
+                </div>
+                <div class="stat-number">{{ total_enfermeras }}</div>
+                <small class="text-success">Staff completo</small>
+            </div>
+            <div class="stat-icon-wrapper" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;">
+                <i class="fas fa-user-nurse"></i>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6">
+        <div class="stat-card">
+            <div>
+                <div class="stat-title mb-2">
+                    <i class="fas fa-baby me-2" style="color: #06b6d4;"></i>Pacientes
+                </div>
+                <div class="stat-number">{{ total_pacientes }}</div>
+                <small class="text-info">
+                    <i class="fas fa-fetus me-1"></i>{{ embarazos_activos|default:0 }} embarazos activos
+                </small>
+            </div>
+            <div class="stat-icon-wrapper" style="background: rgba(6, 182, 212, 0.1); color: #06b6d4;">
+                <i class="fas fa-baby"></i>
+            </div>
+        </div>
+    </div>
 </div>
 
-<!-- =======================
-GRÁFICA
-======================= -->
+<!-- ================= ALERTAS CLÍNICAS Y ESTADÍSTICAS PRENATALES ================= -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="alert-card danger">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="alert-icon danger">
+                            <i class="fas fa-heartbeat"></i>
+                        </div>
+                        <div>
+                            <div class="alert-title fw-semibold">Alto Riesgo Obstétrico</div>
+                            <div class="alert-number">{{ embarazos_riesgo|default:0 }}</div>
+                        </div>
+                    </div>
+                    <small class="text-muted">Requieren seguimiento prioritario inmediato</small>
+                    <div class="progress-prenatal mt-2">
+                        <div class="progress-bar"
+                             data-width="{{ porcentaje_riesgo|default_if_none:0 }}"></div>
 
-<div class="row mb-4">
-    <div class="col-md-6">
-        <div class="card shadow-sm">
-            <div class="card-header">
-                <i class="fas fa-chart-pie me-2"></i> Distribución de usuarios
+                            <script>
+                                 document.querySelectorAll(".progress-bar").forEach(el=>{
+                                  el.style.width = el.dataset.width + "%";
+                                });
+                            </script>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
+            <div class="col-md-6">
+                <div class="alert-card warning">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="alert-icon warning">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <div>
+                            <div class="alert-title fw-semibold">Citas Atrasadas</div>
+                            <div class="alert-number">{{ citas_atrasadas|default:0 }}</div>
+                        </div>
+                    </div>
+                    <small class="text-muted">Pacientes pendientes de atención</small>
+                    <div class="mt-2">
+                        <span class="badge bg-warning bg-opacity-10 text-warning">
+                            <i class="fas fa-exclamation-triangle me-1"></i>Atención requerida
+                        </span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="alert-card success">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="alert-icon success">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div>
+                            <div class="alert-title fw-semibold">Citas Hoy</div>
+                            <div class="alert-number">{{ citas_hoy_count|default:0 }}</div>
+                        </div>
+                    </div>
+                    <small>Próximas consultas programadas</small>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="alert-card info">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="alert-icon info">
+                            <i class="fas fa-fetal-monitor"></i>
+                        </div>
+                        <div>
+                            <div class="alert-title fw-semibold">Partos Próximos</div>
+                            <div class="alert-number">{{ partos_proximos|default:0 }}</div>
+                        </div>
+                    </div>
+                    <small>Fecha probable de parto en 30 días</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="chart-container h-100">
+            <div class="chart-title">
+                <i class="fas fa-chart-pie"></i>
+                <h5 class="mb-0 fw-semibold">Distribución del Equipo</h5>
+            </div>
+            <div style="height: 250px;">
                 <canvas id="usuariosChart"></canvas>
             </div>
+            <div class="prenatal-indicator mt-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">
+                        <i class="fas fa-fetus me-2 text-primary"></i>Ocupación prenatal
+                    </span>
+                    <span class="badge bg-primary">{{ ocupacion_prenatal|default:0 }}%</span>
+                </div>
+                <div class="progress-prenatal">
+                    <div class="progress-bar"
+                         data-width="{{ ocupacion_prenatal|default_if_none:0 }}"></div>
+                        <script>
+                            document.querySelectorAll(".progress-bar").forEach(bar=>{
+                             bar.style.width = bar.dataset.width + "%";
+                            });
+                        </script>
+                <div class="d-flex justify-content-between mt-2 small text-muted">
+                    <span>{{ pacientes_activos|default:0 }} pacientes activos</span>
+                    <span>Capacidad {{ capacidad_total|default:100 }}</span>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- ===== DATA SEGURO PARA JS ===== -->
+<!-- ================= ACCIONES RÁPIDAS Y ACTIVIDAD ================= -->
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="chart-container">
+            <div class="chart-title">
+                <i class="fas fa-bolt"></i>
+                <h5 class="mb-0 fw-semibold">Acciones Rápidas</h5>
+            </div>
+            <div class="quick-actions-grid">
+                <a href="{% url 'usuarios:crear_usuario' %}" class="action-btn">
+                    <i class="fas fa-user-plus"></i>
+                    <span>Crear Usuario</span>
+                </a>
+                <a href="{% url 'pacientes:agregar_paciente' %}" class="action-btn">
+                    <i class="fas fa-baby"></i>
+                    <span>Registrar Paciente</span>
+                </a>
+                <a href="{%  url_if_exists 'consultas:programar_cita' %}" class="action-btn">
+                    <i class="fas fa-calendar-plus"></i>
+                    <span>Programar Cita</span>
+                </a>
+                <a href="{%  url_if_exists 'expedientes:nuevo_embarazo' %}" class="action-btn">
+                    <i class="fas fa-fetal-monitor"></i>
+                    <span>Registrar Embarazo</span>
+                </a>
+                <a href="{% url 'usuarios:lista_usuarios' %}" class="action-btn">
+                    <i class="fas fa-users-cog"></i>
+                    <span>Administrar</span>
+                </a>
+                <a href="{%  url_if_exists 'reportes:prenatal' %}" class="action-btn">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reportes</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="activity-timeline h-100">
+            <div class="chart-title">
+                <i class="fas fa-history"></i>
+                <h5 class="mb-0 fw-semibold">Actividad Reciente</h5>
+            </div>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-dot patient">
+                        <i class="fas fa-baby"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Nuevo paciente registrado</h6>
+                        <small>María González - Embarazo 32 semanas</small>
+                    </div>
+                    <div class="timeline-time">hace 5m</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot consult">
+                        <i class="fas fa-stethoscope"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Consulta prenatal completada</h6>
+                        <small>Dra. Rodríguez - Control de rutina</small>
+                    </div>
+                    <div class="timeline-time">hace 25m</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot record">
+                        <i class="fas fa-notes-medical"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Expediente actualizado</h6>
+                        <small>Resultados de laboratorio</small>
+                    </div>
+                    <div class="timeline-time">hace 1h</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-dot alert">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Alerta de presión arterial</h6>
+                        <small>Paciente requiere seguimiento</small>
+                    </div>
+                    <div class="timeline-time">hace 2h</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="chart-container h-100">
+            <div class="chart-title">
+                <i class="fas fa-calendar-week"></i>
+                <h5 class="mb-0 fw-semibold">Agenda de la Semana</h5>
+            </div>
+            <div class="list-group list-group-flush">
+                {% for consulta in agenda_semanal|slice:":5" %}
+                <div class="list-group-item px-0 border-0 d-flex align-items-center">
+                    <div class="bg-light rounded-circle p-2 me-3" style="width: 45px; height: 45px; display: flex; align-items: center; justify-content: center;">
+                        <i class="fas fa-fetal-monitor text-primary"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-0 fw-semibold">{{ consulta.embarazo.paciente.nombre_completo }}</h6>
+                        <small class="text-muted">
+                            <i class="fas fa-clock me-1"></i>{{ consulta.proxima_cita|date:"l d/m" }} - {{ consulta.usuario.get_full_name }}
+                        </small>
+                    </div>
+                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2">
+                        {{ consulta.proxima_cita|time:"H:i" }}
+                    </span>
+                </div>
+                {% empty %}
+                <p class="text-muted text-center py-3">No hay citas programadas</p>
+                {% endfor %}
+            </div>
+            <div class="mt-3 text-center">
+                <a href="{%  url_if_exists 'consultas:agenda_completa' %}" class="btn btn-outline-primary btn-sm">
+                    Ver agenda completa <i class="fas fa-arrow-right ms-2"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ================= DATOS PARA GRÁFICOS ================= -->
 <div id="chart-data"
-     data-admins="{{ total_admins|default:0 }}"
+     data-admins="{{ total_admins|default:1 }}"
      data-doctores="{{ total_doctores|default:0 }}"
      data-enfermeras="{{ total_enfermeras|default:0 }}"
      data-pacientes="{{ total_pacientes|default:0 }}">
@@ -150,51 +642,59 @@ GRÁFICA
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-
-    const dataEl = document.getElementById('chart-data');
-
-    const admins = Number(dataEl.dataset.admins) || 0;
-    const doctores = Number(dataEl.dataset.doctores) || 0;
-    const enfermeras = Number(dataEl.dataset.enfermeras) || 0;
-    const pacientes = Number(dataEl.dataset.pacientes) || 0;
-
-    const canvas = document.getElementById('usuariosChart');
-    if (canvas) {
-        new Chart(canvas.getContext('2d'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Admins', 'Doctores', 'Enfermeras', 'Pacientes'],
-                datasets: [{
-                    data: [admins, doctores, enfermeras, pacientes],
-                    backgroundColor: ['#0d6efd', '#198754', '#ffc107', '#0dcaf0'],
-                    borderWidth: 2,
-                    borderColor: '#fff'
-                }]
-            },
-            options: {
-                responsive: true,
-                cutout: '65%',
-                plugins: {
-                    legend: { position: 'bottom' }
+document.addEventListener('DOMContentLoaded', function() {
+    const el = document.getElementById('chart-data');
+    
+    // Validar que existan los datos
+    const admins = parseInt(el.dataset.admins) || 0;
+    const doctores = parseInt(el.dataset.doctores) || 0;
+    const enfermeras = parseInt(el.dataset.enfermeras) || 0;
+    const pacientes = parseInt(el.dataset.pacientes) || 0;
+    
+    // Gráfico de doughnut mejorado
+    const ctx = document.getElementById('usuariosChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Administradores', 'Doctores', 'Enfermeras', 'Pacientes'],
+            datasets: [{
+                data: [admins, doctores, enfermeras, pacientes],
+                backgroundColor: [
+                    '#2b5c8a',
+                    '#2e7d5e',
+                    '#e6a057',
+                    '#5d9b9b'
+                ],
+                borderWidth: 0,
+                borderRadius: 8,
+                spacing: 8
+            }]
+        },
+        options: {
+            cutout: '70%',
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true,
+                        pointStyle: 'circle'
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'white',
+                    titleColor: '#2c3e50',
+                    bodyColor: '#64748b',
+                    borderColor: '#e9ecef',
+                    borderWidth: 1,
+                    padding: 12,
+                    boxPadding: 6
                 }
-            }
-        });
-    }
-
-    document.querySelectorAll('.hover-card').forEach(card => {
-        card.addEventListener('mouseenter', () => card.style.transform = 'translateY(-5px)');
-        card.addEventListener('mouseleave', () => card.style.transform = 'translateY(0)');
+            },
+            maintainAspectRatio: false
+        }
     });
-
 });
 </script>
-
-<style>
-.hover-card {
-    transition: transform .3s ease;
-    cursor: pointer;
-}
-</style>
 
 {% endblock %}

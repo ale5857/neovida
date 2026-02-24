@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'consultas',
     'citas',
     'catalogos',
-    'dashboard',
+   'dashboard.apps.DashboardConfig',
 ]
 
 AUTH_USER_MODEL = 'usuarios.Usuario'
