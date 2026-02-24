@@ -132,9 +132,10 @@
                         </button>
 
                         <button class="btn btn-outline-dark flex-fill"
-                                onclick="verExpedienteCompleto()">
-                            <i class="fas fa-file-medical-alt"></i>
-                        </button>
+                        data-url="{% url 'expedientes:expediente_completo' expediente.paciente.id %}"
+                        onclick="verExpedienteCompleto(this)">
+                        <i class="fas fa-file-medical-alt"></i>
+                    </button>
                     </div>
 
                     {% if embarazo %}

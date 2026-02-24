@@ -7,7 +7,6 @@ const expedienteId = data.expedienteId;
 const pacienteNombre = data.pacienteNombre;
 const totalConsultas = data.totalConsultas;
 const embarazoId = data.embarazoId;
-const urlExpedienteCompleto = data.urlExpedienteCompleto;
 
 
 // ===============================
@@ -19,8 +18,8 @@ function nuevaConsulta() {
     modal.show();
 }
 
-function verExpedienteCompleto() {
-    window.location.href = urlExpedienteCompleto;
+function verExpedienteCompleto(btn) {
+    window.location.href = btn.dataset.url;
 }
 
 function imprimirExpediente() {
