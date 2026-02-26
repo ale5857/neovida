@@ -25,14 +25,14 @@ class Paciente(models.Model):
     localidad = models.CharField(max_length=100)
 
     telefono = models.CharField(
-        max_length=8,
-        validators=[
-            RegexValidator(
-                regex=r'^[0-9]{8}$',
-                message="El teléfono debe tener exactamente 8 dígitos numéricos."
-            )
-        ]
-    )
+    max_length=15,
+    validators=[
+        RegexValidator(
+            regex=r'^[0-9]{8,15}$',
+            message="El teléfono debe tener entre 8 y 15 dígitos."
+        )
+    ]
+)
 
     raza = models.CharField(max_length=20, blank=True, null=True)
     estado_civil = models.CharField(max_length=20)
