@@ -98,6 +98,10 @@ DATABASES = {
         ssl_require=True
     )
 }
+if "RENDER" in os.environ:
+    DATABASES["default"]["OPTIONS"] = {
+        "sslmode": "require",
+    }
 
 # ======================
 # AUTH / LOGIN
