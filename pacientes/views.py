@@ -4,9 +4,9 @@
 
 import uuid
 import random
-from django.utils.text import slugify
 import string
 
+from django.utils.text import slugify
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -23,7 +23,6 @@ from .models import (
     AntecedentesFamiliares,
     AntecedentesObstetricos
 )
-
 from expedientes.models import Expediente
 
 
@@ -53,21 +52,28 @@ def calcular_riesgo(paciente):
         if ap.asma or ap.cardiopatia or ap.nefropatia:
             return "Medio"
 
-    except:
+    except Exception:
         pass
 
     return "Bajo"
 
 
+def to_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return 0
+
+
 # ===============================
 # CREAR PACIENTE
 # ===============================
+
 @login_required
 @user_passes_test(solo_personal)
 def agregar_paciente(request):
 
     if request.method == 'POST':
-
         try:
             with transaction.atomic():
 
@@ -91,14 +97,12 @@ def agregar_paciente(request):
                 # ===== GENERAR PASSWORD =====
                 password_generado = generar_password()
 
-                # ===== GENERAR USERNAME CON NOMBRE =====
-                base_username = slugify(f"{nombre}.{apellido}")
-                base_username = base_username.replace("-", "")
-
+                # ===== GENERAR USERNAME =====
+                base_username = slugify(f"{nombre}.{apellido}").replace("-", "")
                 username = base_username
 
                 while Usuario.objects.filter(username=username).exists():
-                    username = f"{base_username}{random.randint(10,99)}"
+                    username = f"{base_username}{random.randint(10, 99)}"
 
                 # ===== CREAR USUARIO =====
                 usuario = Usuario.objects.create(
@@ -106,7 +110,6 @@ def agregar_paciente(request):
                     email=f"{uuid.uuid4().hex[:10]}@paciente.local",
                     rol="PACIENTE"
                 )
-
                 usuario.set_password(password_generado)
                 usuario.save()
 
@@ -149,11 +152,11 @@ def agregar_paciente(request):
                 # ===== ANTECEDENTES OBSTETRICOS =====
                 AntecedentesObstetricos.objects.create(
                     paciente=paciente,
-                    gestas=int(request.POST.get('num_embarazos', 0)),
-                    partos=int(request.POST.get('num_partos', 0)),
-                    cesareas=int(request.POST.get('num_cesareas', 0)),
-                    abortos=int(request.POST.get('num_abortos', 0)),
-                    nacidos_vivos=int(request.POST.get('num_hijos_vivos', 0)),
+                    gestas=to_int(request.POST.get('num_embarazos')),
+                    partos=to_int(request.POST.get('num_partos')),
+                    cesareas=to_int(request.POST.get('num_cesareas')),
+                    abortos=to_int(request.POST.get('num_abortos')),
+                    nacidos_vivos=to_int(request.POST.get('num_hijos_vivos')),
                     complicaciones_previas=request.POST.get('complicaciones', '').strip(),
                 )
 
@@ -171,6 +174,7 @@ def agregar_paciente(request):
             messages.error(request, f"Error inesperado: {str(e)}")
 
     return render(request, 'pacientes/agregar_paciente.html')
+
 
 # ===============================
 # LISTA DE PACIENTES
@@ -203,7 +207,6 @@ def api_pacientes(request):
     data = []
 
     for p in page_obj:
-
         riesgo = calcular_riesgo(p)
 
         if filtro == "alto" and riesgo != "Alto":
@@ -214,7 +217,7 @@ def api_pacientes(request):
             gestas = ao.gestas
             partos = ao.partos
             abortos = ao.abortos
-        except:
+        except Exception:
             gestas = partos = abortos = 0
 
         enfermedades = []
@@ -226,7 +229,7 @@ def api_pacientes(request):
             if ap.eclampsia: enfermedades.append("Eclampsia")
             if ap.cardiopatia: enfermedades.append("Cardiopatía")
             if ap.nefropatia: enfermedades.append("Nefropatía")
-        except:
+        except Exception:
             pass
 
         data.append({
