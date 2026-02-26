@@ -13,6 +13,5 @@ def crear_embarazo_inicial(sender, instance, created, **kwargs):
         Embarazo.objects.create(
             expediente=instance,
             fecha_ultima_regla=date.today(),
-            semanas_gestacion=0,
             activo=True
         )

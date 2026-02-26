@@ -205,3 +205,6 @@ class Ultrasonido(models.Model):
 
     def __str__(self):
         return f"Ultrasonido {self.fecha} - {self.embarazo.expediente.paciente}"
+    
+
+    

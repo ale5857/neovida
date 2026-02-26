@@ -28,13 +28,13 @@ class UsuarioLoginView(LoginView):
             return reverse_lazy('pacientes:panel_paciente')
 
         elif user.rol == 'DOCTOR':
-            return reverse_lazy('pacientes:lista_pacientes')
+            return reverse_lazy('panel_principal')
 
         elif user.rol == 'ENFERMERA':
-            return reverse_lazy('pacientes:lista_pacientes')
+            return reverse_lazy('panel_principal')
 
         elif user.rol == 'ADMIN':
-            return reverse_lazy('usuarios:lista_usuarios')
+            return reverse_lazy('panel_principal')
 
         return reverse_lazy('login')
 

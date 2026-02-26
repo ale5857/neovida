@@ -10,7 +10,7 @@ import string
 def generar_password():
     return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
 
-
+"""
 @receiver(post_save, sender=Paciente)
 def crear_usuario_paciente(sender, instance, created, **kwargs):
     if created and instance.usuario is None:
@@ -44,7 +44,7 @@ def crear_usuario_paciente(sender, instance, created, **kwargs):
         print("Usuario creado automáticamente")
         print("Username:", username)
         print("Password:", password)
-
+"""
 
 from expedientes.models import Expediente
 from django.db.models.signals import post_save
