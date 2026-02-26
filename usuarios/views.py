@@ -21,22 +21,18 @@ class UsuarioLoginView(LoginView):
         messages.error(self.request, "Usuario o contraseña incorrectos")
         return super().form_invalid(form)
 
+    
     def get_success_url(self):
-         user = self.request.user
+        user = self.request.user
 
-         if user.rol == 'PACIENTE':
-          return reverse_lazy('pacientes:panel_paciente')
+        if user.rol == 'PACIENTE':
+             return reverse_lazy('pacientes:panel_paciente')
 
-         elif user.rol == 'DOCTOR':
-          return reverse_lazy('panel_principal')
+        elif user.rol in ['DOCTOR', 'ENFERMERA', 'ADMIN']:
+             return reverse_lazy('panel_principal')
 
-         elif user.rol == 'ENFERMERA':
-            return reverse_lazy('panel_principal')
-
-         elif user.rol == 'ADMIN':
-            return reverse_lazy('panel_principal')
-
-         return reverse_lazy('usuarios:login')
+          # fallback seguro
+        return reverse_lazy('panel_principal')
 
 
 # =====================================================
